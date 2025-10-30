@@ -1,0 +1,48 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F2F2F2 0%, #E8E8E8 100%);
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+.mainCard {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: var(--spacing-xl);
+  min-height: calc(100vh - 3rem);
+}
+
+.content {
+  margin-top: var(--spacing-2xl);
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.title {
+  font-size: 2.25rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-dark-gray);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}

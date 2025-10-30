@@ -1,0 +1,210 @@
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+.mainCard {
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-2xl);
+  min-height: calc(100vh - 3rem);
+}
+
+.content {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-medium-gray);
+  font-weight: 400;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+  border: 1px solid var(--color-gray);
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft-hover);
+}
+
+.statIconWrapper {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-lg);
+  color: var(--color-medium-gray);
+}
+
+.statContent {
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--color-medium-gray);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  color: var(--color-black);
+  font-weight: 700;
+}
+
+.categorySection {
+  margin-top: var(--spacing-2xl);
+}
+
+.categoryTitle {
+  font-size: 1.25rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-lg);
+  font-weight: 600;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.categoryCard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-xl);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+  border: 1px solid;
+}
+
+.categoryCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft-hover);
+}
+
+.categoryIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.categoryContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.categoryValue {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.categoryDescription {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.declarar {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  border-color: rgba(231, 76, 60, 0.2);
+  color: #C0392B;
+}
+
+.declarar .categoryIcon {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.emergencia {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: rgba(230, 126, 34, 0.2);
+  color: #D35400;
+}
+
+.emergencia .categoryIcon {
+  background: rgba(230, 126, 34, 0.15);
+}
+
+.urgente {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: rgba(243, 156, 18, 0.2);
+  color: #D68910;
+}
+
+.urgente .categoryIcon {
+  background: rgba(243, 156, 18, 0.15);
+}
+
+.poucoUrgente {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: rgba(52, 152, 219, 0.2);
+  color: #2980B9;
+}
+
+.poucoUrgente .categoryIcon {
+  background: rgba(52, 152, 219, 0.15);
+}
+
+.analise {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: rgba(46, 204, 113, 0.2);
+  color: #27AE60;
+}
+
+.analise .categoryIcon {
+  background: rgba(46, 204, 113, 0.15);
+}

@@ -1,0 +1,131 @@
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--color-white);
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-gray);
+}
+
+.logo {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.logoText {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-black);
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  color: var(--color-medium-gray);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.navItem:hover {
+  background: var(--color-light-gray);
+  color: var(--color-black);
+}
+
+.active {
+  background: var(--color-light-gray);
+  color: var(--color-black);
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.label {
+  flex: 1;
+}
+
+.userSection {
+  margin-top: auto;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-gray);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-black);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userRole {
+  font-size: 0.75rem;
+  color: var(--color-medium-gray);
+  text-transform: capitalize;
+}
+
+.logoutButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-light-gray);
+  color: var(--color-medium-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.logoutButton:hover {
+  background: var(--color-gray);
+  color: var(--color-black);
+}

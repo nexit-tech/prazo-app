@@ -1,0 +1,42 @@
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+.mainCard {
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-2xl);
+  min-height: calc(100vh - 3rem);
+}
+
+.content {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-medium-gray);
+}

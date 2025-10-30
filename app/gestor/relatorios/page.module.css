@@ -1,0 +1,106 @@
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+.mainCard {
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-2xl);
+  min-height: calc(100vh - 3rem);
+}
+
+.content {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-medium-gray);
+}
+
+.section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-lg);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.reportCard {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.reportIcon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-lg);
+  color: var(--color-medium-gray);
+  flex-shrink: 0;
+}
+
+.reportContent {
+  flex: 1;
+}
+
+.reportLabel {
+  font-size: 0.8125rem;
+  color: var(--color-medium-gray);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.reportValue {
+  font-size: 2rem;
+  color: var(--color-black);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.reportDescription {
+  font-size: 0.75rem;
+  color: var(--color-medium-gray);
+}

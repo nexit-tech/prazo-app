@@ -1,0 +1,132 @@
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+.mainCard {
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-2xl);
+  min-height: calc(100vh - 3rem);
+}
+
+.content {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-medium-gray);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.alertCard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-xl);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+  border: 1px solid;
+}
+
+.alertCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft-hover);
+}
+
+.alertIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.alertContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.alertLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.alertValue {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.alertDescription {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.declarar {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  border-color: rgba(231, 76, 60, 0.2);
+  color: #C0392B;
+}
+
+.declarar .alertIcon {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.emergencia {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: rgba(230, 126, 34, 0.2);
+  color: #D35400;
+}
+
+.emergencia .alertIcon {
+  background: rgba(230, 126, 34, 0.15);
+}
+
+.urgente {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: rgba(243, 156, 18, 0.2);
+  color: #D68910;
+}
+
+.urgente .alertIcon {
+  background: rgba(243, 156, 18, 0.15);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
