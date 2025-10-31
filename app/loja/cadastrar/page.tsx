@@ -5,12 +5,25 @@ import { useState } from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Input from '@/components/Input/Input';
+import DatePicker from '@/components/DatePicker/DatePicker';
+import AutocompleteInput from '@/components/AutocompleteInput/AutocompleteInput';
 import Button from '@/components/Button/Button';
 import styles from './page.module.css';
 
 export default function LojaCadastrarPage() {
   const router = useRouter();
   const [userName] = useState('Ana Costa');
+
+  const [categories, setCategories] = useState([
+    { value: 'laticinios', label: 'Laticínios' },
+    { value: 'padaria', label: 'Padaria' },
+    { value: 'carnes', label: 'Carnes' },
+    { value: 'bebidas', label: 'Bebidas' },
+    { value: 'higiene', label: 'Higiene' },
+    { value: 'limpeza', label: 'Limpeza' },
+    { value: 'hortifruti', label: 'Hortifruti' },
+    { value: 'outros', label: 'Outros' },
+  ]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,11 +49,23 @@ export default function LojaCadastrarPage() {
     { label: 'Etiquetas', href: '/loja/etiquetas', icon: 'Tag' },
   ];
 
+  const handleCreateCategory = (newCategory: string) => {
+    const categoryValue = newCategory.toLowerCase().replace(/\s+/g, '-');
+    const newCategoryOption = {
+      value: categoryValue,
+      label: newCategory,
+    };
+    setCategories([...categories, newCategoryOption]);
+    setFormData({ ...formData, category: categoryValue });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     alert('Produto cadastrado com sucesso!');
     router.push('/loja/produtos');
   };
+
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className={styles.container}>
@@ -82,11 +107,13 @@ export default function LojaCadastrarPage() {
                   </div>
 
                   <div className={styles.row}>
-                    <Input
+                    <AutocompleteInput
                       label="Categoria"
-                      placeholder="Ex: Laticínios"
+                      placeholder="Digite ou selecione uma categoria"
                       value={formData.category}
                       onChange={(value) => setFormData({ ...formData, category: value })}
+                      options={categories}
+                      onCreateNew={handleCreateCategory}
                       fullWidth
                       required
                     />
@@ -140,11 +167,11 @@ export default function LojaCadastrarPage() {
                     />
                   </div>
 
-                  <Input
-                    type="date"
+                  <DatePicker
                     label="Data de Validade"
                     value={formData.expirationDate}
                     onChange={(value) => setFormData({ ...formData, expirationDate: value })}
+                    min={today}
                     fullWidth
                     required
                   />

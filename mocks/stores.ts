@@ -1,40 +1,43 @@
-import { Store } from '../types';
+export interface Store {
+  id: string;
+  code: string;
+  name: string;
+  email: string;
+  address: string;
+  phone: string;
+  isActive: boolean;
+  createdAt: string;
+}
 
 export const mockStores: Store[] = [
   {
     id: 'store-1',
-    name: 'Filial Centro',
     code: 'FL001',
-    email: 'loja01@prazo.com',
-    password: 'loja123',
+    name: 'Filial Centro',
+    email: 'filial.centro@empresa.com',
     address: 'Rua das Flores, 123 - Centro',
     phone: '(11) 98765-4321',
-    managerId: '1',
-    createdAt: '2024-01-15T10:00:00Z',
     isActive: true,
+    createdAt: '2024-01-15',
   },
   {
     id: 'store-2',
-    name: 'Filial Norte',
     code: 'FL002',
-    email: 'loja02@prazo.com',
-    password: 'loja123',
+    name: 'Filial Norte',
+    email: 'filial.norte@empresa.com',
     address: 'Av. Principal, 456 - Zona Norte',
     phone: '(11) 98765-4322',
-    managerId: '1',
-    createdAt: '2024-02-10T10:00:00Z',
     isActive: true,
+    createdAt: '2024-02-10',
   },
   {
     id: 'store-3',
-    name: 'Filial Sul',
     code: 'FL003',
-    email: 'loja03@prazo.com',
-    password: 'loja123',
+    name: 'Filial Sul',
+    email: 'filial.sul@empresa.com',
     address: 'Rua do Comércio, 789 - Zona Sul',
     phone: '(11) 98765-4323',
-    managerId: '1',
-    createdAt: '2024-03-05T10:00:00Z',
     isActive: true,
+    createdAt: '2024-03-05',
   },
 ];

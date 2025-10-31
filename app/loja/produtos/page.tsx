@@ -1,20 +1,30 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
-import Table from '@/components/Table/Table';
 import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
+import SearchBar from '@/components/SearchBar/SearchBar';
+import Select from '@/components/Select/Select';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { mockProducts } from '@/mocks/products';
 import { formatDate, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
 import styles from './page.module.css';
+
+type SortOrder = 'asc' | 'desc' | null;
 
 export default function LojaProdutosPage() {
   const router = useRouter();
   const [userName] = useState('Ana Costa');
   const storeId = 'store-1';
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
   const handleLogout = () => {
     router.push('/login');
@@ -29,6 +39,74 @@ export default function LojaProdutosPage() {
   ];
 
   const storeProducts = mockProducts.filter((p) => p.storeId === storeId && !p.isSold);
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else if (sortOrder === 'desc') {
+        setSortColumn(null);
+        setSortOrder(null);
+      }
+    } else {
+      setSortColumn(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return <ArrowUpDown size={14} />;
+    if (sortOrder === 'asc') return <ArrowUp size={14} />;
+    return <ArrowDown size={14} />;
+  };
+
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = storeProducts.filter((product) => {
+      const searchMatch = searchTerm === '' || 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode.includes(searchTerm) ||
+        product.internalCode.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const statusMatch = statusFilter === '' || 
+        getExpirationCategory(product.expirationDate) === statusFilter;
+
+      const categoryMatch = categoryFilter === '' || 
+        product.category === categoryFilter;
+
+      return searchMatch && statusMatch && categoryMatch;
+    });
+
+    if (sortColumn && sortOrder) {
+      result.sort((a, b) => {
+        let aValue: string | number = '';
+        let bValue: string | number = '';
+
+        if (sortColumn === 'name') {
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+        } else if (sortColumn === 'brand') {
+          aValue = a.brand.toLowerCase();
+          bValue = b.brand.toLowerCase();
+        } else if (sortColumn === 'currentPrice') {
+          aValue = a.currentPrice;
+          bValue = b.currentPrice;
+        } else if (sortColumn === 'quantity') {
+          aValue = a.quantity;
+          bValue = b.quantity;
+        } else if (sortColumn === 'expirationDate') {
+          aValue = new Date(a.expirationDate).getTime();
+          bValue = new Date(b.expirationDate).getTime();
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [storeProducts, searchTerm, statusFilter, categoryFilter, sortColumn, sortOrder]);
 
   const handleEdit = (productId: string) => {
     alert(`Editar produto ${productId}`);
@@ -46,52 +124,25 @@ export default function LojaProdutosPage() {
     }
   };
 
-  const columns = [
-    { key: 'name', label: 'Produto' },
-    { key: 'barcode', label: 'Código de Barras' },
-    { key: 'internalCode', label: 'Código Interno' },
-    { key: 'brand', label: 'Marca' },
-    { key: 'quantity', label: 'Qtd' },
-    { 
-      key: 'currentPrice', 
-      label: 'Preço Atual',
-      render: (value: number) => new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-      }).format(value)
-    },
-    { 
-      key: 'expirationDate', 
-      label: 'Validade',
-      render: (value: string) => formatDate(value)
-    },
-    { 
-      key: 'expirationDate', 
-      label: 'Status',
-      render: (value: string) => {
-        const category = getExpirationCategory(value);
-        const label = getExpirationLabel(category);
-        const variant = getExpirationBadgeVariant(category);
-        return <Badge variant={variant}>{label}</Badge>;
-      }
-    },
-    {
-      key: 'id',
-      label: 'Ações',
-      render: (value: string) => (
-        <div className={styles.actions}>
-          <Button variant="primary" onClick={() => handleSell(value)}>
-            Vender
-          </Button>
-          <Button variant="secondary" onClick={() => handleEdit(value)}>
-            Editar
-          </Button>
-          <Button variant="danger" onClick={() => handleDelete(value)}>
-            Excluir
-          </Button>
-        </div>
-      )
-    },
+  const statusOptions = [
+    { value: '', label: 'Todos os status' },
+    { value: 'declarar', label: 'Declarar Baixa' },
+    { value: 'emergencia', label: 'Emergência' },
+    { value: 'urgente', label: 'Urgente' },
+    { value: 'pouco-urgente', label: 'Pouco Urgente' },
+    { value: 'analise', label: 'Em Análise' },
+  ];
+
+  const categoryOptions = [
+    { value: '', label: 'Todas as categorias' },
+    { value: 'laticinios', label: 'Laticínios' },
+    { value: 'padaria', label: 'Padaria' },
+    { value: 'carnes', label: 'Carnes' },
+    { value: 'bebidas', label: 'Bebidas' },
+    { value: 'higiene', label: 'Higiene' },
+    { value: 'limpeza', label: 'Limpeza' },
+    { value: 'hortifruti', label: 'Hortifruti' },
+    { value: 'outros', label: 'Outros' },
   ];
 
   return (
@@ -108,12 +159,139 @@ export default function LojaProdutosPage() {
           <div className={styles.mainCard}>
             <div className={styles.content}>
               <div className={styles.header}>
-                <h1 className={styles.title}>Meus Produtos</h1>
-                <p className={styles.subtitle}>Gerencie o estoque da sua loja</p>
+                <div>
+                  <h1 className={styles.title}>Meus Produtos</h1>
+                  <p className={styles.subtitle}>Gerencie o estoque da sua loja</p>
+                </div>
+              </div>
+
+              <div className={styles.filters}>
+                <SearchBar
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar por nome, marca, código..."
+                  fullWidth
+                />
+                <div className={styles.filterRow}>
+                  <Select
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    options={statusOptions}
+                    placeholder="Filtrar por status"
+                  />
+                  <Select
+                    value={categoryFilter}
+                    onChange={setCategoryFilter}
+                    options={categoryOptions}
+                    placeholder="Filtrar por categoria"
+                  />
+                  <div className={styles.resultCount}>
+                    {filteredAndSortedProducts.length} produto{filteredAndSortedProducts.length !== 1 ? 's' : ''} encontrado{filteredAndSortedProducts.length !== 1 ? 's' : ''}
+                  </div>
+                </div>
               </div>
 
               <Card padding="medium">
-                <Table columns={columns} data={storeProducts} emptyMessage="Nenhum produto cadastrado" />
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>
+                          <button 
+                            className={`${styles.sortButton} ${sortColumn === 'name' ? styles.active : ''}`}
+                            onClick={() => handleSort('name')}
+                          >
+                            Produto {getSortIcon('name')}
+                          </button>
+                        </th>
+                        <th>Código de Barras</th>
+                        <th>Código Interno</th>
+                        <th>
+                          <button 
+                            className={`${styles.sortButton} ${sortColumn === 'brand' ? styles.active : ''}`}
+                            onClick={() => handleSort('brand')}
+                          >
+                            Marca {getSortIcon('brand')}
+                          </button>
+                        </th>
+                        <th>
+                          <button 
+                            className={`${styles.sortButton} ${sortColumn === 'quantity' ? styles.active : ''}`}
+                            onClick={() => handleSort('quantity')}
+                          >
+                            Qtd {getSortIcon('quantity')}
+                          </button>
+                        </th>
+                        <th>
+                          <button 
+                            className={`${styles.sortButton} ${sortColumn === 'currentPrice' ? styles.active : ''}`}
+                            onClick={() => handleSort('currentPrice')}
+                          >
+                            Preço Atual {getSortIcon('currentPrice')}
+                          </button>
+                        </th>
+                        <th>
+                          <button 
+                            className={`${styles.sortButton} ${sortColumn === 'expirationDate' ? styles.active : ''}`}
+                            onClick={() => handleSort('expirationDate')}
+                          >
+                            Validade {getSortIcon('expirationDate')}
+                          </button>
+                        </th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAndSortedProducts.length > 0 ? (
+                        filteredAndSortedProducts.map((product) => {
+                          const category = getExpirationCategory(product.expirationDate);
+                          const statusLabel = getExpirationLabel(category);
+                          const variant = getExpirationBadgeVariant(category);
+                          
+                          return (
+                            <tr key={product.id}>
+                              <td>{product.name}</td>
+                              <td>{product.barcode}</td>
+                              <td>{product.internalCode}</td>
+                              <td>{product.brand}</td>
+                              <td>{product.quantity}</td>
+                              <td>
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(product.currentPrice)}
+                              </td>
+                              <td>{formatDate(product.expirationDate)}</td>
+                              <td>
+                                <Badge variant={variant}>{statusLabel}</Badge>
+                              </td>
+                              <td>
+                                <div className={styles.actions}>
+                                  <Button variant="primary" onClick={() => handleSell(product.id)}>
+                                    Vender
+                                  </Button>
+                                  <Button variant="secondary" onClick={() => handleEdit(product.id)}>
+                                    Editar
+                                  </Button>
+                                  <Button variant="danger" onClick={() => handleDelete(product.id)}>
+                                    Excluir
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={9} className={styles.emptyMessage}>
+                            Nenhum produto encontrado
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             </div>
           </div>

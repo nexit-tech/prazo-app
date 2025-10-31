@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   Package, 
   TrendingUp, 
@@ -15,6 +15,8 @@ import {
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Button from '@/components/Button/Button';
+import DatePicker from '@/components/DatePicker/DatePicker';
+import Select from '@/components/Select/Select';
 import { mockProducts } from '@/mocks/products';
 import { mockPromotions } from '@/mocks/promotions';
 import { getExpirationCategory } from '@/utils/dateHelpers';
@@ -23,6 +25,10 @@ import styles from './page.module.css';
 export default function GestorRelatoriosPage() {
   const router = useRouter();
   const [userName] = useState('Carlos Silva');
+
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [periodFilter, setPeriodFilter] = useState('all');
 
   const handleLogout = () => {
     router.push('/login');
@@ -36,6 +42,53 @@ export default function GestorRelatoriosPage() {
     { label: 'Relatórios', href: '/gestor/relatorios', icon: 'TrendingUp' },
   ];
 
+  const periodOptions = [
+    { value: 'all', label: 'Todo o período' },
+    { value: 'today', label: 'Hoje' },
+    { value: 'week', label: 'Última semana' },
+    { value: 'month', label: 'Último mês' },
+    { value: 'custom', label: 'Período personalizado' },
+  ];
+
+  // Função para filtrar por data
+  const filterByDate = (date: string) => {
+    if (periodFilter === 'all') return true;
+    
+    const itemDate = new Date(date);
+    const today = new Date();
+    
+    if (periodFilter === 'today') {
+      return itemDate.toDateString() === today.toDateString();
+    }
+    
+    if (periodFilter === 'week') {
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return itemDate >= weekAgo;
+    }
+    
+    if (periodFilter === 'month') {
+      return itemDate.getMonth() === today.getMonth() && 
+             itemDate.getFullYear() === today.getFullYear();
+    }
+    
+    if (periodFilter === 'custom' && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return itemDate >= start && itemDate <= end;
+    }
+    
+    return true;
+  };
+
+  // Aplicar filtros aos dados
+  const filteredSoldProducts = useMemo(() => {
+    return mockProducts.filter((p) => p.isSold && filterByDate(p.soldAt || ''));
+  }, [periodFilter, startDate, endDate]);
+
+  const filteredNewProducts = useMemo(() => {
+    return mockProducts.filter((p) => !p.isSold && filterByDate(p.createdAt));
+  }, [periodFilter, startDate, endDate]);
+
   // Gestão de Estoque
   const allProducts = mockProducts.filter((p) => !p.isSold);
   const nearExpiration = allProducts.filter((p) => {
@@ -43,19 +96,14 @@ export default function GestorRelatoriosPage() {
     return category === 'declarar' || category === 'emergencia';
   }).length;
   
-  const expired = 0; // Produtos já vencidos
-  const newProducts = allProducts.filter((p) => {
-    const createdDate = new Date(p.createdAt);
-    const today = new Date();
-    const diffDays = Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays <= 7;
-  }).length;
+  const expired = 0;
+  const newProducts = filteredNewProducts.length;
   
   const lowStock = allProducts.filter((p) => p.quantity < 10).length;
   const lowStockPercentage = ((lowStock / allProducts.length) * 100).toFixed(1);
 
   // Controle de Vendas
-  const soldProducts = mockProducts.filter((p) => p.isSold);
+  const soldProducts = filteredSoldProducts;
   const soldToday = soldProducts.filter((p) => {
     const soldDate = new Date(p.soldAt || '');
     const today = new Date();
@@ -80,7 +128,6 @@ export default function GestorRelatoriosPage() {
     ? ((soldWithDiscount / soldProducts.length) * 100).toFixed(1)
     : '0.0';
 
-  // Calcular tempo médio entre cadastro e venda
   const averageTimeToSell = soldProducts.length > 0
     ? soldProducts.reduce((sum, p) => {
         const created = new Date(p.createdAt).getTime();
@@ -93,7 +140,6 @@ export default function GestorRelatoriosPage() {
   const totalLabels = mockPromotions.length;
   const activePromotions = mockPromotions.filter((p) => p.isActive).length;
   
-  // Simular produtos vendidos após promoção (aqui seria necessário rastrear isso no sistema real)
   const productsWithPromotion = mockPromotions.length;
   const soldAfterPromotion = soldProducts.filter((p) => p.currentPrice < p.originalPrice).length;
   const promotionSuccessRate = productsWithPromotion > 0
@@ -102,6 +148,14 @@ export default function GestorRelatoriosPage() {
 
   const exportReport = () => {
     alert('Exportando relatório completo...');
+  };
+
+  const handlePeriodChange = (value: string) => {
+    setPeriodFilter(value);
+    if (value !== 'custom') {
+      setStartDate('');
+      setEndDate('');
+    }
   };
 
   return (
@@ -127,6 +181,35 @@ export default function GestorRelatoriosPage() {
                   Exportar Relatório
                 </Button>
               </div>
+
+              {/* Filtros */}
+              <Card padding="medium">
+                <div className={styles.filters}>
+                  <h3 className={styles.filterTitle}>Filtros de Período</h3>
+                  <div className={styles.filterRow}>
+                    <Select
+                      value={periodFilter}
+                      onChange={handlePeriodChange}
+                      options={periodOptions}
+                    />
+                    {periodFilter === 'custom' && (
+                      <>
+                        <DatePicker
+                          label="Data Início"
+                          value={startDate}
+                          onChange={setStartDate}
+                        />
+                        <DatePicker
+                          label="Data Fim"
+                          value={endDate}
+                          onChange={setEndDate}
+                          min={startDate}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </Card>
 
               {/* Gestão de Estoque */}
               <div className={styles.section}>
@@ -169,7 +252,7 @@ export default function GestorRelatoriosPage() {
                       <div className={styles.reportContent}>
                         <p className={styles.reportLabel}>Novos Lotes</p>
                         <h3 className={styles.reportValue}>{newProducts}</h3>
-                        <p className={styles.reportDescription}>Últimos 7 dias</p>
+                        <p className={styles.reportDescription}>No período selecionado</p>
                       </div>
                     </div>
                   </Card>
@@ -304,7 +387,7 @@ export default function GestorRelatoriosPage() {
                       <div className={styles.reportContent}>
                         <p className={styles.reportLabel}>Vendidos c/ Promoção</p>
                         <h3 className={styles.reportValue}>{soldAfterPromotion}</h3>
-                        <p className={styles.reportDescription}>Após desconto</p>
+                        <p className={styles.reportDescription}>No período</p>
                       </div>
                     </div>
                   </Card>

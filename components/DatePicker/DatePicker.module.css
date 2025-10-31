@@ -1,0 +1,219 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  position: relative;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-black);
+  font-family: var(--font-heading);
+}
+
+.required {
+  color: #EF4444;
+  margin-left: var(--spacing-xs);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputButton {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 3rem;
+  border-radius: var(--border-radius-md);
+  border: 2px solid var(--color-gray);
+  background: var(--color-white);
+  font-size: 0.9375rem;
+  color: var(--color-black);
+  transition: var(--transition);
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.inputButton:hover {
+  border-color: var(--color-medium-gray);
+}
+
+.inputButton.open {
+  border-color: var(--color-medium-gray);
+  box-shadow: 0 0 0 4px rgba(156, 163, 175, 0.1);
+}
+
+.icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--color-medium-gray);
+  pointer-events: none;
+}
+
+.selectedText {
+  color: var(--color-black);
+  font-weight: 500;
+}
+
+.placeholderText {
+  color: var(--color-medium-gray);
+}
+
+.calendar {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-gray);
+  z-index: 1000;
+  padding: var(--spacing-lg);
+  min-width: 320px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.monthYear {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-black);
+  text-transform: capitalize;
+}
+
+.navButton {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-medium-gray);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.navButton:hover {
+  background: var(--color-gray);
+  color: var(--color-black);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-medium-gray);
+  padding: var(--spacing-xs);
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-black);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.day:hover:not(:disabled) {
+  background: var(--color-light-gray);
+}
+
+.dayToday {
+  background: var(--color-light-gray);
+  font-weight: 700;
+}
+
+.daySelected {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.daySelected:hover {
+  background: var(--gradient-primary);
+  opacity: 0.9;
+}
+
+.dayDisabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendarFooter {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-gray);
+  display: flex;
+  justify-content: center;
+}
+
+.todayButton {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-black);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.todayButton:hover {
+  background: var(--color-gray);
+}

@@ -1,22 +1,27 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Tag, TrendingUp, Download, Eye, EyeOff } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Tag, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
 import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
+import SearchBar from '@/components/SearchBar/SearchBar';
+import Select from '@/components/Select/Select';
 import { mockPromotions } from '@/mocks/promotions';
 import { mockProducts } from '@/mocks/products';
 import { mockStores } from '@/mocks/stores';
-import { formatDate } from '@/utils/dateHelpers';
 import styles from './page.module.css';
 
 export default function GestorPromocoesPage() {
   const router = useRouter();
   const [userName] = useState('Carlos Silva');
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [storeFilter, setStoreFilter] = useState('');
 
   const handleLogout = () => {
     router.push('/login');
@@ -40,6 +45,30 @@ export default function GestorPromocoesPage() {
     return store?.name || 'N/A';
   };
 
+  // Filtros
+  const filteredPromotions = useMemo(() => {
+    return mockPromotions.filter((promotion) => {
+      const productName = getProductName(promotion.productId);
+      
+      // Busca vetorial
+      const searchMatch = searchTerm === '' || 
+        productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        promotion.newBarcode.includes(searchTerm);
+
+      // Filtro de status
+      const statusMatch = statusFilter === '' || 
+        (statusFilter === 'active' && promotion.isActive) ||
+        (statusFilter === 'inactive' && !promotion.isActive) ||
+        (statusFilter === 'visible' && promotion.isVisible) ||
+        (statusFilter === 'hidden' && !promotion.isVisible);
+
+      // Filtro de loja
+      const storeMatch = storeFilter === '' || promotion.storeId === storeFilter;
+
+      return searchMatch && statusMatch && storeMatch;
+    });
+  }, [mockPromotions, searchTerm, statusFilter, storeFilter]);
+
   const handleToggleVisibility = (promotionId: string) => {
     alert(`Alternar visibilidade da promoção ${promotionId}`);
   };
@@ -50,10 +79,26 @@ export default function GestorPromocoesPage() {
     }
   };
 
-  const totalPromotions = mockPromotions.length;
-  const activePromotions = mockPromotions.filter((p) => p.isActive).length;
-  const visiblePromotions = mockPromotions.filter((p) => p.isVisible).length;
-  const totalDiscount = mockPromotions.reduce((sum, p) => sum + p.discount, 0);
+  const totalPromotions = filteredPromotions.length;
+  const activePromotions = filteredPromotions.filter((p) => p.isActive).length;
+  const visiblePromotions = filteredPromotions.filter((p) => p.isVisible).length;
+  const totalDiscount = filteredPromotions.reduce((sum, p) => sum + p.discount, 0);
+
+  const statusOptions = [
+    { value: '', label: 'Todos os status' },
+    { value: 'active', label: 'Ativas' },
+    { value: 'inactive', label: 'Inativas' },
+    { value: 'visible', label: 'Visíveis' },
+    { value: 'hidden', label: 'Ocultas' },
+  ];
+
+  const storeOptions = [
+    { value: '', label: 'Todas as lojas' },
+    ...mockStores.map((store) => ({
+      value: store.id,
+      label: store.name,
+    })),
+  ];
 
   const columns = [
     { 
@@ -171,7 +216,7 @@ export default function GestorPromocoesPage() {
 
                 <div className={styles.statCard}>
                   <div className={styles.statIconWrapper}>
-                    <Download size={24} />
+                    <Tag size={24} />
                   </div>
                   <div className={styles.statContent}>
                     <p className={styles.statLabel}>Desconto Médio</p>
@@ -182,8 +227,34 @@ export default function GestorPromocoesPage() {
                 </div>
               </div>
 
+              <div className={styles.filters}>
+                <SearchBar
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar por produto, código..."
+                  fullWidth
+                />
+                <div className={styles.filterRow}>
+                  <Select
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    options={statusOptions}
+                    placeholder="Filtrar por status"
+                  />
+                  <Select
+                    value={storeFilter}
+                    onChange={setStoreFilter}
+                    options={storeOptions}
+                    placeholder="Filtrar por loja"
+                  />
+                  <div className={styles.resultCount}>
+                    {filteredPromotions.length} promoç{filteredPromotions.length !== 1 ? 'ões' : 'ão'} encontrada{filteredPromotions.length !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+
               <Card padding="medium">
-                <Table columns={columns} data={mockPromotions} emptyMessage="Nenhuma promoção cadastrada" />
+                <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
               </Card>
             </div>
           </div>

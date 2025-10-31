@@ -1,0 +1,37 @@
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-medium-gray);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: var(--transition);
+}
+
+.sortButton:hover {
+  color: var(--color-black);
+}
+
+.sortButton.active {
+  color: var(--color-black);
+}
+
+.icon {
+  opacity: 0.6;
+  transition: var(--transition);
+}
+
+.sortButton:hover .icon {
+  opacity: 1;
+}
+
+.sortButton.active .icon {
+  opacity: 1;
+}

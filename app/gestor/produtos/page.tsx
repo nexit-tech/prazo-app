@@ -1,11 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
 import Badge from '@/components/Badge/Badge';
+import SearchBar from '@/components/SearchBar/SearchBar';
+import Select from '@/components/Select/Select';
 import { mockProducts } from '@/mocks/products';
 import { mockStores } from '@/mocks/stores';
 import { getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
@@ -14,6 +16,10 @@ import styles from './page.module.css';
 export default function GestorProdutosPage() {
   const router = useRouter();
   const [userName] = useState('Carlos Silva');
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [storeFilter, setStoreFilter] = useState('');
 
   const handleLogout = () => {
     router.push('/login');
@@ -33,6 +39,43 @@ export default function GestorProdutosPage() {
   };
 
   const allProducts = mockProducts.filter((p) => !p.isSold);
+
+  // Filtros
+  const filteredProducts = useMemo(() => {
+    return allProducts.filter((product) => {
+      // Busca vetorial
+      const searchMatch = searchTerm === '' || 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode.includes(searchTerm);
+
+      // Filtro de status
+      const statusMatch = statusFilter === '' || 
+        getExpirationCategory(product.expirationDate) === statusFilter;
+
+      // Filtro de loja
+      const storeMatch = storeFilter === '' || product.storeId === storeFilter;
+
+      return searchMatch && statusMatch && storeMatch;
+    });
+  }, [allProducts, searchTerm, statusFilter, storeFilter]);
+
+  const statusOptions = [
+    { value: '', label: 'Todos os status' },
+    { value: 'declarar', label: 'Declarar Baixa' },
+    { value: 'emergencia', label: 'Emergência' },
+    { value: 'urgente', label: 'Urgente' },
+    { value: 'pouco-urgente', label: 'Pouco Urgente' },
+    { value: 'analise', label: 'Em Análise' },
+  ];
+
+  const storeOptions = [
+    { value: '', label: 'Todas as lojas' },
+    ...mockStores.map((store) => ({
+      value: store.id,
+      label: store.name,
+    })),
+  ];
 
   const columns = [
     { key: 'name', label: 'Produto' },
@@ -78,12 +121,40 @@ export default function GestorProdutosPage() {
           <div className={styles.mainCard}>
             <div className={styles.content}>
               <div className={styles.header}>
-                <h1 className={styles.title}>Produtos</h1>
-                <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
+                <div>
+                  <h1 className={styles.title}>Produtos</h1>
+                  <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
+                </div>
+              </div>
+
+              <div className={styles.filters}>
+                <SearchBar
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar por nome, marca, código..."
+                  fullWidth
+                />
+                <div className={styles.filterRow}>
+                  <Select
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    options={statusOptions}
+                    placeholder="Filtrar por status"
+                  />
+                  <Select
+                    value={storeFilter}
+                    onChange={setStoreFilter}
+                    options={storeOptions}
+                    placeholder="Filtrar por loja"
+                  />
+                  <div className={styles.resultCount}>
+                    {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                  </div>
+                </div>
               </div>
 
               <Card padding="medium">
-                <Table columns={columns} data={allProducts} />
+                <Table columns={columns} data={filteredProducts} emptyMessage="Nenhum produto encontrado" />
               </Card>
             </div>
           </div>
