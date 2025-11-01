@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Eye, Edit2, Power } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
@@ -10,6 +10,7 @@ import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Select from '@/components/Select/Select';
+import CreateStoreModal from './components/CreateStoreModal/CreateStoreModal';
 import { mockStores } from '@/mocks/stores';
 import { formatDate } from '@/utils/dateHelpers';
 import styles from './page.module.css';
@@ -17,9 +18,10 @@ import styles from './page.module.css';
 export default function GestorLojasPage() {
   const router = useRouter();
   const [userName] = useState('Carlos Silva');
-
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [stores, setStores] = useState(mockStores);
 
   const handleLogout = () => {
     router.push('/login');
@@ -33,10 +35,8 @@ export default function GestorLojasPage() {
     { label: 'Relatórios', href: '/gestor/relatorios', icon: 'TrendingUp' },
   ];
 
-  // Filtros
   const filteredStores = useMemo(() => {
-    return mockStores.filter((store) => {
-      // Busca vetorial (nome, código, endereço, telefone, email)
+    return stores.filter((store) => {
       const searchMatch = searchTerm === '' || 
         store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         store.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,21 +44,34 @@ export default function GestorLojasPage() {
         store.phone.includes(searchTerm) ||
         (store.email && store.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      // Filtro de status
       const statusMatch = statusFilter === '' || 
         (statusFilter === 'active' && store.isActive) ||
         (statusFilter === 'inactive' && !store.isActive);
 
       return searchMatch && statusMatch;
     });
-  }, [searchTerm, statusFilter]);
+  }, [stores, searchTerm, statusFilter]);
+
+  const handleCreateStore = (data: any) => {
+    const newStore = {
+      id: `store-${Date.now()}`,
+      ...data,
+      isActive: true,
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+
+    setStores([...stores, newStore]);
+    alert('Loja cadastrada com sucesso!');
+  };
 
   const handleEdit = (storeId: string) => {
     alert(`Editar loja ${storeId}`);
   };
 
   const handleToggleStatus = (storeId: string) => {
-    alert(`Alternar status da loja ${storeId}`);
+    setStores(stores.map(s => 
+      s.id === storeId ? { ...s, isActive: !s.isActive } : s
+    ));
   };
 
   const handleViewDetails = (storeId: string) => {
@@ -71,8 +84,8 @@ export default function GestorLojasPage() {
     { value: 'inactive', label: 'Inativas' },
   ];
 
-  const activeStores = mockStores.filter((s) => s.isActive).length;
-  const inactiveStores = mockStores.filter((s) => !s.isActive).length;
+  const activeStores = stores.filter((s) => s.isActive).length;
+  const inactiveStores = stores.filter((s) => !s.isActive).length;
 
   const columns = [
     { key: 'code', label: 'Código' },
@@ -100,16 +113,16 @@ export default function GestorLojasPage() {
       render: (value: string, row: any) => (
         <div className={styles.actions}>
           <Button variant="primary" onClick={() => handleViewDetails(value)}>
-            Detalhes
+            <Eye size={16} />
           </Button>
           <Button variant="secondary" onClick={() => handleEdit(value)}>
-            Editar
+            <Edit2 size={16} />
           </Button>
           <Button 
             variant={row.isActive ? 'danger' : 'primary'} 
             onClick={() => handleToggleStatus(value)}
           >
-            {row.isActive ? 'Desativar' : 'Ativar'}
+            <Power size={16} />
           </Button>
         </div>
       )
@@ -130,11 +143,11 @@ export default function GestorLojasPage() {
           <div className={styles.mainCard}>
             <div className={styles.content}>
               <div className={styles.header}>
-                <div>
+                <div className={styles.headerText}>
                   <h1 className={styles.title}>Lojas</h1>
                   <p className={styles.subtitle}>Gerencie todas as filiais</p>
                 </div>
-                <Button variant="primary" onClick={() => router.push('/gestor/lojas/cadastrar')}>
+                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
                   <Plus size={18} />
                   Nova Loja
                 </Button>
@@ -142,29 +155,23 @@ export default function GestorLojasPage() {
 
               <div className={styles.statsGrid}>
                 <Card padding="medium">
-                  <div className={styles.statCard}>
-                    <div className={styles.statInfo}>
-                      <p className={styles.statLabel}>Total de Lojas</p>
-                      <h3 className={styles.statValue}>{mockStores.length}</h3>
-                    </div>
+                  <div>
+                    <p className={styles.resultCount}>Total de Lojas</p>
+                    <h3 className={styles.title}>{stores.length}</h3>
                   </div>
                 </Card>
 
                 <Card padding="medium">
-                  <div className={styles.statCard}>
-                    <div className={styles.statInfo}>
-                      <p className={styles.statLabel}>Lojas Ativas</p>
-                      <h3 className={styles.statValue}>{activeStores}</h3>
-                    </div>
+                  <div>
+                    <p className={styles.resultCount}>Lojas Ativas</p>
+                    <h3 className={styles.title}>{activeStores}</h3>
                   </div>
                 </Card>
 
                 <Card padding="medium">
-                  <div className={styles.statCard}>
-                    <div className={styles.statInfo}>
-                      <p className={styles.statLabel}>Lojas Inativas</p>
-                      <h3 className={styles.statValue}>{inactiveStores}</h3>
-                    </div>
+                  <div>
+                    <p className={styles.resultCount}>Lojas Inativas</p>
+                    <h3 className={styles.title}>{inactiveStores}</h3>
                   </div>
                 </Card>
               </div>
@@ -196,6 +203,12 @@ export default function GestorLojasPage() {
           </div>
         </main>
       </div>
+
+      <CreateStoreModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateStore}
+      />
     </div>
   );
 }

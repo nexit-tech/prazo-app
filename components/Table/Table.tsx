@@ -12,7 +12,11 @@ interface TableProps {
   emptyMessage?: string;
 }
 
-export default function Table({ columns, data, emptyMessage = 'Nenhum dado encontrado' }: TableProps) {
+export default function Table({ 
+  columns, 
+  data, 
+  emptyMessage = 'Nenhum dado encontrado' 
+}: TableProps) {
   if (data.length === 0) {
     return (
       <div className={styles.empty}>
@@ -35,10 +39,12 @@ export default function Table({ columns, data, emptyMessage = 'Nenhum dado encon
         </thead>
         <tbody className={styles.tbody}>
           {data.map((row, index) => (
-            <tr key={index} className={styles.tr}>
+            <tr key={row.id || index} className={styles.tr}>
               {columns.map((column) => (
                 <td key={column.key} className={styles.td}>
-                  {column.render ? column.render(row[column.key], row) : row[column.key]}
+                  {column.render 
+                    ? column.render(row[column.key], row) 
+                    : row[column.key]}
                 </td>
               ))}
             </tr>

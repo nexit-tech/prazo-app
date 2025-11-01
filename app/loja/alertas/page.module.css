@@ -1,6 +1,16 @@
 .container {
   min-height: 100vh;
   background: #F5F7FA;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .layout {
@@ -11,6 +21,18 @@
 .main {
   flex: 1;
   padding: var(--spacing-xl);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mainCard {
@@ -57,6 +79,31 @@
   box-shadow: var(--shadow-card);
   transition: var(--transition);
   border: 1px solid;
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alertCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.alertCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.alertCard:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 .alertCard:hover {
@@ -129,4 +176,27 @@
 .actions {
   display: flex;
   gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.actions button {
+  min-width: 40px;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .mainCard {
+    padding: var(--spacing-lg);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
 }

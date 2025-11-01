@@ -1,6 +1,16 @@
 .container {
   min-height: 100vh;
   background: #F5F7FA;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .layout {
@@ -11,6 +21,19 @@
 .main {
   flex: 1;
   padding: var(--spacing-xl);
+  overflow-y: auto;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mainCard {
@@ -29,7 +52,9 @@
   margin-bottom: var(--spacing-xl);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
 }
 
 .title {
@@ -60,11 +85,24 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: flex-end;
+  flex-wrap: wrap;
 }
 
 .section {
   margin-top: var(--spacing-2xl);
   margin-bottom: var(--spacing-2xl);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sectionTitle {
@@ -75,6 +113,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--color-light-gray);
 }
 
 .grid {
@@ -87,6 +127,19 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
+  animation: cardSlide 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes cardSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .reportIcon {
@@ -103,6 +156,7 @@
 
 .reportContent {
   flex: 1;
+  min-width: 0;
 }
 
 .reportLabel {
@@ -110,6 +164,8 @@
   color: var(--color-medium-gray);
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .reportValue {
@@ -122,4 +178,37 @@
 .reportDescription {
   font-size: 0.75rem;
   color: var(--color-medium-gray);
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .mainCard {
+    padding: var(--spacing-lg);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reportCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .reportValue {
+    font-size: 1.5rem;
+  }
 }

@@ -1,6 +1,16 @@
 .container {
   min-height: 100vh;
   background: #F5F7FA;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .layout {
@@ -11,6 +21,18 @@
 .main {
   flex: 1;
   padding: var(--spacing-xl);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mainCard {
@@ -59,6 +81,43 @@
   box-shadow: var(--shadow-card);
   transition: var(--transition);
   border: 1px solid var(--color-gray);
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.statCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.statCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.statCard:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.statCard:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.statCard:nth-child(6) {
+  animation-delay: 0.6s;
 }
 
 .statCard:hover {
@@ -75,10 +134,12 @@
   background: var(--color-light-gray);
   border-radius: var(--border-radius-lg);
   color: var(--color-medium-gray);
+  flex-shrink: 0;
 }
 
 .statContent {
   flex: 1;
+  min-width: 0;
 }
 
 .statLabel {
@@ -86,6 +147,8 @@
   color: var(--color-medium-gray);
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .statValue {
@@ -120,6 +183,8 @@
   box-shadow: var(--shadow-card);
   transition: var(--transition);
   border: 1px solid;
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
 }
 
 .categoryCard:hover {
@@ -207,4 +272,22 @@
 
 .analise .categoryIcon {
   background: rgba(46, 204, 113, 0.15);
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .mainCard {
+    padding: var(--spacing-lg);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryGrid {
+    grid-template-columns: 1fr;
+  }
 }

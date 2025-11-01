@@ -53,13 +53,13 @@ export default function Sidebar({ menuItems, userName, userRole, onLogout }: Sid
       <nav className={styles.nav}>
         {menuItems.map((item) => {
           const IconComponent = iconMap[item.icon];
+          const isActive = pathname === item.href;
+          
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`${styles.navItem} ${
-                pathname === item.href ? styles.active : ''
-              }`}
+              className={`${styles.navItem} ${isActive ? styles.active : ''}`}
             >
               <span className={styles.icon}>
                 {IconComponent && <IconComponent size={20} strokeWidth={2} />}

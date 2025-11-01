@@ -2,15 +2,17 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
+import { Eye } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
 import Badge from '@/components/Badge/Badge';
+import Button from '@/components/Button/Button';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Select from '@/components/Select/Select';
 import { mockProducts } from '@/mocks/products';
 import { mockStores } from '@/mocks/stores';
-import { getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
 import styles from './page.module.css';
 
 export default function GestorProdutosPage() {
@@ -40,25 +42,25 @@ export default function GestorProdutosPage() {
 
   const allProducts = mockProducts.filter((p) => !p.isSold);
 
-  // Filtros
   const filteredProducts = useMemo(() => {
     return allProducts.filter((product) => {
-      // Busca vetorial
       const searchMatch = searchTerm === '' || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.barcode.includes(searchTerm);
 
-      // Filtro de status
       const statusMatch = statusFilter === '' || 
         getExpirationCategory(product.expirationDate) === statusFilter;
 
-      // Filtro de loja
       const storeMatch = storeFilter === '' || product.storeId === storeFilter;
 
       return searchMatch && statusMatch && storeMatch;
     });
   }, [allProducts, searchTerm, statusFilter, storeFilter]);
+
+  const handleViewDetails = (productId: string) => {
+    alert(`Ver detalhes do produto ${productId}`);
+  };
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
@@ -97,6 +99,11 @@ export default function GestorProdutosPage() {
     },
     { 
       key: 'expirationDate', 
+      label: 'Validade',
+      render: (value: string) => formatDaysRemaining(value)
+    },
+    { 
+      key: 'expirationDate', 
       label: 'Status',
       render: (value: string) => {
         const category = getExpirationCategory(value);
@@ -104,6 +111,15 @@ export default function GestorProdutosPage() {
         const variant = getExpirationBadgeVariant(category);
         return <Badge variant={variant}>{label}</Badge>;
       }
+    },
+    {
+      key: 'id',
+      label: 'Ações',
+      render: (value: string) => (
+        <Button variant="primary" onClick={() => handleViewDetails(value)}>
+          <Eye size={16} />
+        </Button>
+      )
     },
   ];
 

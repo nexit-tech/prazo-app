@@ -12,6 +12,24 @@ export function getDaysUntilExpiration(expirationDate: string): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+export function formatDaysRemaining(expirationDate: string): string {
+  const days = getDaysUntilExpiration(expirationDate);
+  
+  if (days < 0) {
+    return `Vencido há ${Math.abs(days)} dia${Math.abs(days) !== 1 ? 's' : ''}`;
+  }
+  
+  if (days === 0) {
+    return 'Vence hoje';
+  }
+  
+  if (days === 1) {
+    return 'Vence amanhã';
+  }
+  
+  return `${days} dias restantes`;
+}
+
 export function getExpirationCategory(expirationDate: string): 'declarar' | 'emergencia' | 'urgente' | 'pouco-urgente' | 'analise' {
   const days = getDaysUntilExpiration(expirationDate);
   

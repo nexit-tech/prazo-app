@@ -2,14 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { AlertTriangle, Package, Calendar } from 'lucide-react';
+import { AlertTriangle, Package, Tag, Trash2 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
 import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
 import { mockProducts } from '@/mocks/products';
-import { formatDate, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
 import styles from './page.module.css';
 
 export default function LojaAlertasPage() {
@@ -40,8 +40,14 @@ export default function LojaAlertasPage() {
   const emergencia = criticalProducts.filter((p) => getExpirationCategory(p.expirationDate) === 'emergencia').length;
   const urgente = criticalProducts.filter((p) => getExpirationCategory(p.expirationDate) === 'urgente').length;
 
-  const handleAction = (productId: string, action: string) => {
-    alert(`${action} produto ${productId}`);
+  const handlePromotion = (productId: string) => {
+    alert(`Criar promoção para produto ${productId}`);
+  };
+
+  const handleDiscard = (productId: string) => {
+    if (confirm('Tem certeza que deseja declarar baixa deste produto?')) {
+      alert(`Baixa declarada para produto ${productId}`);
+    }
   };
 
   const columns = [
@@ -59,7 +65,7 @@ export default function LojaAlertasPage() {
     { 
       key: 'expirationDate', 
       label: 'Validade',
-      render: (value: string) => formatDate(value)
+      render: (value: string) => formatDaysRemaining(value)
     },
     { 
       key: 'expirationDate', 
@@ -76,11 +82,11 @@ export default function LojaAlertasPage() {
       label: 'Ações',
       render: (value: string) => (
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => handleAction(value, 'Criar promoção')}>
-            Promoção
+          <Button variant="primary" onClick={() => handlePromotion(value)}>
+            <Tag size={16} />
           </Button>
-          <Button variant="danger" onClick={() => handleAction(value, 'Declarar baixa')}>
-            Baixa
+          <Button variant="danger" onClick={() => handleDiscard(value)}>
+            <Trash2 size={16} />
           </Button>
         </div>
       )

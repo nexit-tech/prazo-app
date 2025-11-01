@@ -8,9 +8,9 @@ import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Select from '@/components/Select/Select';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ShoppingCart, Edit2, Trash2 } from 'lucide-react';
 import { mockProducts } from '@/mocks/products';
-import { formatDate, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
 import styles from './page.module.css';
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -262,20 +262,20 @@ export default function LojaProdutosPage() {
                                   currency: 'BRL',
                                 }).format(product.currentPrice)}
                               </td>
-                              <td>{formatDate(product.expirationDate)}</td>
+                              <td>{formatDaysRemaining(product.expirationDate)}</td>
                               <td>
                                 <Badge variant={variant}>{statusLabel}</Badge>
                               </td>
                               <td>
                                 <div className={styles.actions}>
                                   <Button variant="primary" onClick={() => handleSell(product.id)}>
-                                    Vender
+                                    <ShoppingCart size={16} />
                                   </Button>
                                   <Button variant="secondary" onClick={() => handleEdit(product.id)}>
-                                    Editar
+                                    <Edit2 size={16} />
                                   </Button>
                                   <Button variant="danger" onClick={() => handleDelete(product.id)}>
-                                    Excluir
+                                    <Trash2 size={16} />
                                   </Button>
                                 </div>
                               </td>

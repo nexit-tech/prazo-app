@@ -1,6 +1,16 @@
 .container {
   min-height: 100vh;
   background: #F5F7FA;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .layout {
@@ -11,6 +21,18 @@
 .main {
   flex: 1;
   padding: var(--spacing-xl);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mainCard {
@@ -52,6 +74,7 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .resultCount {
@@ -60,4 +83,27 @@
   font-weight: 500;
   margin-left: auto;
   white-space: nowrap;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-sm);
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .mainCard {
+    padding: var(--spacing-lg);
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resultCount {
+    margin-left: 0;
+    text-align: center;
+  }
 }

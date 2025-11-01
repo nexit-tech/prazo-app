@@ -86,11 +86,9 @@ export default function LojaEtiquetasPage() {
         <div className={styles.actions}>
           <Button variant="primary" onClick={() => handleDownload(value)}>
             <Download size={16} />
-            Baixar
           </Button>
           <Button variant="secondary" onClick={() => handlePrint(value)}>
             <Printer size={16} />
-            Imprimir
           </Button>
         </div>
       )

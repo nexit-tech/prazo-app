@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Store } from 'lucide-react';
-import Card from '@/components/Card/Card';
-import Input from '@/components/Input/Input';
 import Button from '@/components/Button/Button';
 import { mockUsers } from '@/mocks/users';
 import styles from './page.module.css';
@@ -14,25 +12,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    const user = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    );
+    setTimeout(() => {
+      const user = mockUsers.find(
+        (u) => u.email === email && u.password === password
+      );
 
-    if (!user) {
-      setError('Email ou senha inválidos');
-      return;
-    }
+      if (!user) {
+        setError('Email ou senha inválidos');
+        setLoading(false);
+        return;
+      }
 
-    if (user.role === 'gestor') {
-      router.push('/gestor/dashboard');
-    } else {
-      router.push('/loja/dashboard');
-    }
+      if (user.role === 'gestor') {
+        router.push('/gestor/dashboard');
+      } else {
+        router.push('/loja/dashboard');
+      }
+    }, 800);
   };
 
   return (
@@ -73,6 +76,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className={styles.input}
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -88,14 +92,15 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className={styles.input}
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               {error && <p className={styles.error}>{error}</p>}
 
-              <Button type="submit" variant="primary" fullWidth>
-                Começar
+              <Button type="submit" variant="primary" fullWidth disabled={loading}>
+                {loading ? 'Entrando...' : 'Começar'}
               </Button>
             </form>
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
-import { Tag, TrendingUp, Eye, EyeOff } from 'lucide-react';
+import { Tag, TrendingUp, Eye, EyeOff, Plus } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
@@ -10,6 +10,7 @@ import Badge from '@/components/Badge/Badge';
 import Button from '@/components/Button/Button';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import Select from '@/components/Select/Select';
+import CreatePromotionModal from './components/CreatePromotionModal/CreatePromotionModal';
 import { mockPromotions } from '@/mocks/promotions';
 import { mockProducts } from '@/mocks/products';
 import { mockStores } from '@/mocks/stores';
@@ -18,10 +19,11 @@ import styles from './page.module.css';
 export default function GestorPromocoesPage() {
   const router = useRouter();
   const [userName] = useState('Carlos Silva');
-
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [storeFilter, setStoreFilter] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [promotions, setPromotions] = useState(mockPromotions);
 
   const handleLogout = () => {
     router.push('/login');
@@ -45,37 +47,50 @@ export default function GestorPromocoesPage() {
     return store?.name || 'N/A';
   };
 
-  // Filtros
   const filteredPromotions = useMemo(() => {
-    return mockPromotions.filter((promotion) => {
+    return promotions.filter((promotion) => {
       const productName = getProductName(promotion.productId);
       
-      // Busca vetorial
       const searchMatch = searchTerm === '' || 
         productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         promotion.newBarcode.includes(searchTerm);
 
-      // Filtro de status
       const statusMatch = statusFilter === '' || 
         (statusFilter === 'active' && promotion.isActive) ||
         (statusFilter === 'inactive' && !promotion.isActive) ||
         (statusFilter === 'visible' && promotion.isVisible) ||
         (statusFilter === 'hidden' && !promotion.isVisible);
 
-      // Filtro de loja
       const storeMatch = storeFilter === '' || promotion.storeId === storeFilter;
 
       return searchMatch && statusMatch && storeMatch;
     });
-  }, [mockPromotions, searchTerm, statusFilter, storeFilter]);
+  }, [promotions, searchTerm, statusFilter, storeFilter]);
+
+  const handleCreatePromotion = (data: any) => {
+    const newPromotion = {
+      id: `promo-${Date.now()}`,
+      ...data,
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      createdBy: '1',
+      createdAt: new Date().toISOString(),
+    };
+
+    setPromotions([...promotions, newPromotion]);
+    alert('Promoção criada com sucesso!');
+  };
 
   const handleToggleVisibility = (promotionId: string) => {
-    alert(`Alternar visibilidade da promoção ${promotionId}`);
+    setPromotions(promotions.map(p => 
+      p.id === promotionId ? { ...p, isVisible: !p.isVisible } : p
+    ));
   };
 
   const handleDelete = (promotionId: string) => {
     if (confirm('Tem certeza que deseja excluir esta promoção?')) {
-      alert(`Promoção ${promotionId} excluída!`);
+      setPromotions(promotions.filter(p => p.id !== promotionId));
+      alert('Promoção excluída!');
     }
   };
 
@@ -180,7 +195,10 @@ export default function GestorPromocoesPage() {
                   <h1 className={styles.title}>Promoções</h1>
                   <p className={styles.subtitle}>Gerencie descontos e promoções</p>
                 </div>
-                <Button variant="primary">Nova Promoção</Button>
+                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                  <Plus size={18} />
+                  Nova Promoção
+                </Button>
               </div>
 
               <div className={styles.grid}>
@@ -260,6 +278,12 @@ export default function GestorPromocoesPage() {
           </div>
         </main>
       </div>
+
+      <CreatePromotionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreatePromotion}
+      />
     </div>
   );
 }

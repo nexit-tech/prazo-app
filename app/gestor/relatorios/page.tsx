@@ -10,7 +10,9 @@ import {
   DollarSign,
   Tag,
   BarChart3,
-  Download
+  Download,
+  TrendingDown,
+  Clock
 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
@@ -19,7 +21,8 @@ import DatePicker from '@/components/DatePicker/DatePicker';
 import Select from '@/components/Select/Select';
 import { mockProducts } from '@/mocks/products';
 import { mockPromotions } from '@/mocks/promotions';
-import { getExpirationCategory } from '@/utils/dateHelpers';
+import { mockStores } from '@/mocks/stores';
+import { getExpirationCategory, getDaysUntilExpiration } from '@/utils/dateHelpers';
 import styles from './page.module.css';
 
 export default function GestorRelatoriosPage() {
@@ -29,6 +32,7 @@ export default function GestorRelatoriosPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [periodFilter, setPeriodFilter] = useState('all');
+  const [storeFilter, setStoreFilter] = useState('');
 
   const handleLogout = () => {
     router.push('/login');
@@ -50,7 +54,14 @@ export default function GestorRelatoriosPage() {
     { value: 'custom', label: 'Período personalizado' },
   ];
 
-  // Função para filtrar por data
+  const storeOptions = [
+    { value: '', label: 'Todas as lojas' },
+    ...mockStores.map((store) => ({
+      value: store.id,
+      label: store.name,
+    })),
+  ];
+
   const filterByDate = (date: string) => {
     if (periodFilter === 'all') return true;
     
@@ -80,29 +91,40 @@ export default function GestorRelatoriosPage() {
     return true;
   };
 
-  // Aplicar filtros aos dados
+  const filteredProducts = useMemo(() => {
+    return mockProducts.filter((p) => {
+      const storeMatch = storeFilter === '' || p.storeId === storeFilter;
+      return storeMatch;
+    });
+  }, [storeFilter]);
+
   const filteredSoldProducts = useMemo(() => {
-    return mockProducts.filter((p) => p.isSold && filterByDate(p.soldAt || ''));
-  }, [periodFilter, startDate, endDate]);
+    return mockProducts.filter((p) => {
+      const storeMatch = storeFilter === '' || p.storeId === storeFilter;
+      return p.isSold && filterByDate(p.soldAt || '') && storeMatch;
+    });
+  }, [periodFilter, startDate, endDate, storeFilter]);
 
   const filteredNewProducts = useMemo(() => {
-    return mockProducts.filter((p) => !p.isSold && filterByDate(p.createdAt));
-  }, [periodFilter, startDate, endDate]);
+    return mockProducts.filter((p) => {
+      const storeMatch = storeFilter === '' || p.storeId === storeFilter;
+      return !p.isSold && filterByDate(p.createdAt) && storeMatch;
+    });
+  }, [periodFilter, startDate, endDate, storeFilter]);
 
-  // Gestão de Estoque
-  const allProducts = mockProducts.filter((p) => !p.isSold);
+  const allProducts = filteredProducts.filter((p) => !p.isSold);
   const nearExpiration = allProducts.filter((p) => {
     const category = getExpirationCategory(p.expirationDate);
     return category === 'declarar' || category === 'emergencia';
   }).length;
   
-  const expired = 0;
+  const expired = allProducts.filter((p) => getDaysUntilExpiration(p.expirationDate) < 0).length;
   const newProducts = filteredNewProducts.length;
-  
   const lowStock = allProducts.filter((p) => p.quantity < 10).length;
-  const lowStockPercentage = ((lowStock / allProducts.length) * 100).toFixed(1);
+  const lowStockPercentage = allProducts.length > 0 
+    ? ((lowStock / allProducts.length) * 100).toFixed(1) 
+    : '0.0';
 
-  // Controle de Vendas
   const soldProducts = filteredSoldProducts;
   const soldToday = soldProducts.filter((p) => {
     const soldDate = new Date(p.soldAt || '');
@@ -128,6 +150,9 @@ export default function GestorRelatoriosPage() {
     ? ((soldWithDiscount / soldProducts.length) * 100).toFixed(1)
     : '0.0';
 
+  const totalRevenue = soldProducts.reduce((sum, p) => sum + p.currentPrice, 0);
+  const averageTicket = soldProducts.length > 0 ? totalRevenue / soldProducts.length : 0;
+
   const averageTimeToSell = soldProducts.length > 0
     ? soldProducts.reduce((sum, p) => {
         const created = new Date(p.createdAt).getTime();
@@ -136,10 +161,8 @@ export default function GestorRelatoriosPage() {
       }, 0) / soldProducts.length
     : 0;
 
-  // Ações e Promoções
   const totalLabels = mockPromotions.length;
   const activePromotions = mockPromotions.filter((p) => p.isActive).length;
-  
   const productsWithPromotion = mockPromotions.length;
   const soldAfterPromotion = soldProducts.filter((p) => p.currentPrice < p.originalPrice).length;
   const promotionSuccessRate = productsWithPromotion > 0
@@ -178,19 +201,24 @@ export default function GestorRelatoriosPage() {
                 </div>
                 <Button variant="primary" onClick={exportReport}>
                   <Download size={18} />
-                  Exportar Relatório
+                  Exportar
                 </Button>
               </div>
 
-              {/* Filtros */}
               <Card padding="medium">
                 <div className={styles.filters}>
-                  <h3 className={styles.filterTitle}>Filtros de Período</h3>
+                  <h3 className={styles.filterTitle}>Filtros de Análise</h3>
                   <div className={styles.filterRow}>
                     <Select
                       value={periodFilter}
                       onChange={handlePeriodChange}
                       options={periodOptions}
+                    />
+                    <Select
+                      value={storeFilter}
+                      onChange={setStoreFilter}
+                      options={storeOptions}
+                      placeholder="Filtrar por loja"
                     />
                     {periodFilter === 'custom' && (
                       <>
@@ -211,7 +239,6 @@ export default function GestorRelatoriosPage() {
                 </div>
               </Card>
 
-              {/* Gestão de Estoque */}
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>
                   <Package size={20} />
@@ -234,7 +261,7 @@ export default function GestorRelatoriosPage() {
                   <Card padding="medium">
                     <div className={styles.reportCard}>
                       <div className={styles.reportIcon}>
-                        <AlertTriangle size={28} />
+                        <TrendingDown size={28} />
                       </div>
                       <div className={styles.reportContent}>
                         <p className={styles.reportLabel}>Produtos Vencidos</p>
@@ -252,7 +279,7 @@ export default function GestorRelatoriosPage() {
                       <div className={styles.reportContent}>
                         <p className={styles.reportLabel}>Novos Lotes</p>
                         <h3 className={styles.reportValue}>{newProducts}</h3>
-                        <p className={styles.reportDescription}>No período selecionado</p>
+                        <p className={styles.reportDescription}>No período</p>
                       </div>
                     </div>
                   </Card>
@@ -272,7 +299,6 @@ export default function GestorRelatoriosPage() {
                 </div>
               </div>
 
-              {/* Controle de Vendas */}
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>
                   <DollarSign size={20} />
@@ -321,6 +347,44 @@ export default function GestorRelatoriosPage() {
                   <Card padding="medium">
                     <div className={styles.reportCard}>
                       <div className={styles.reportIcon}>
+                        <DollarSign size={28} />
+                      </div>
+                      <div className={styles.reportContent}>
+                        <p className={styles.reportLabel}>Receita Total</p>
+                        <h3 className={styles.reportValue}>
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          }).format(totalRevenue)}
+                        </h3>
+                        <p className={styles.reportDescription}>No período</p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card padding="medium">
+                    <div className={styles.reportCard}>
+                      <div className={styles.reportIcon}>
+                        <BarChart3 size={28} />
+                      </div>
+                      <div className={styles.reportContent}>
+                        <p className={styles.reportLabel}>Ticket Médio</p>
+                        <h3 className={styles.reportValue}>
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(averageTicket)}
+                        </h3>
+                        <p className={styles.reportDescription}>Por venda</p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card padding="medium">
+                    <div className={styles.reportCard}>
+                      <div className={styles.reportIcon}>
                         <Tag size={28} />
                       </div>
                       <div className={styles.reportContent}>
@@ -334,10 +398,10 @@ export default function GestorRelatoriosPage() {
                   <Card padding="medium">
                     <div className={styles.reportCard}>
                       <div className={styles.reportIcon}>
-                        <BarChart3 size={28} />
+                        <Clock size={28} />
                       </div>
                       <div className={styles.reportContent}>
-                        <p className={styles.reportLabel}>Tempo Médio p/ Venda</p>
+                        <p className={styles.reportLabel}>Tempo p/ Venda</p>
                         <h3 className={styles.reportValue}>{Math.round(averageTimeToSell)}</h3>
                         <p className={styles.reportDescription}>dias em estoque</p>
                       </div>
@@ -346,7 +410,6 @@ export default function GestorRelatoriosPage() {
                 </div>
               </div>
 
-              {/* Ações e Promoções */}
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>
                   <Tag size={20} />

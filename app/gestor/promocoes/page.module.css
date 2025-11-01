@@ -1,6 +1,16 @@
 .container {
   min-height: 100vh;
   background: #F5F7FA;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .layout {
@@ -11,6 +21,18 @@
 .main {
   flex: 1;
   padding: var(--spacing-xl);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mainCard {
@@ -29,7 +51,9 @@
   margin-bottom: var(--spacing-xl);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
 }
 
 .title {
@@ -61,6 +85,35 @@
   box-shadow: var(--shadow-card);
   transition: var(--transition);
   border: 1px solid var(--color-gray);
+  animation: fadeInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.statCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.statCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.statCard:nth-child(4) {
+  animation-delay: 0.4s;
 }
 
 .statCard:hover {
@@ -77,10 +130,12 @@
   background: var(--color-light-gray);
   border-radius: var(--border-radius-lg);
   color: var(--color-medium-gray);
+  flex-shrink: 0;
 }
 
 .statContent {
   flex: 1;
+  min-width: 0;
 }
 
 .statLabel {
@@ -88,6 +143,8 @@
   color: var(--color-medium-gray);
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .statValue {
@@ -107,6 +164,7 @@
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .resultCount {
@@ -115,9 +173,50 @@
   font-weight: 500;
   margin-left: auto;
   white-space: nowrap;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-light-gray);
+  border-radius: var(--border-radius-sm);
 }
 
 .actions {
   display: flex;
   gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.actions button {
+  min-width: 40px;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: var(--spacing-md);
+  }
+
+  .mainCard {
+    padding: var(--spacing-lg);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resultCount {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
 }
