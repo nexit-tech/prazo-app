@@ -1,33 +1,31 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
-import { Tag, TrendingUp, Eye, EyeOff, Plus } from 'lucide-react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Table from '@/components/Table/Table';
-import Badge from '@/components/Badge/Badge';
-import Button from '@/components/Button/Button';
-import SearchBar from '@/components/SearchBar/SearchBar';
-import Select from '@/components/Select/Select';
-import CreatePromotionModal from './components/CreatePromotionModal/CreatePromotionModal';
-import { mockPromotions } from '@/mocks/promotions';
-import { mockProducts } from '@/mocks/products';
-import { mockStores } from '@/mocks/stores';
-import styles from './page.module.css';
+import { useState, useMemo } from 'react'
+import { Tag, TrendingUp, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Table from '@/components/Table/Table'
+import Badge from '@/components/Badge/Badge'
+import Button from '@/components/Button/Button'
+import SearchBar from '@/components/SearchBar/SearchBar'
+import Select from '@/components/Select/Select'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import CreatePromotionModal from './components/CreatePromotionModal/CreatePromotionModal'
+import { useAuth } from '@/hooks/useAuth'
+import { usePromotions } from '@/hooks/usePromotions'
+import { useProducts } from '@/hooks/useProducts'
+import { useStores } from '@/hooks/useStores'
+import styles from './page.module.css'
 
 export default function GestorPromocoesPage() {
-  const router = useRouter();
-  const [userName] = useState('Carlos Silva');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [storeFilter, setStoreFilter] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [promotions, setPromotions] = useState(mockPromotions);
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  const { user, logout } = useAuth()
+  const { promotions, loading, toggleVisibility, deletePromotion, refresh } = usePromotions()
+  const { products } = useProducts()
+  const { stores } = useStores()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [storeFilter, setStoreFilter] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -35,69 +33,66 @@ export default function GestorPromocoesPage() {
     { label: 'Produtos', href: '/gestor/produtos', icon: 'Package' },
     { label: 'Promoções', href: '/gestor/promocoes', icon: 'Tag' },
     { label: 'Relatórios', href: '/gestor/relatorios', icon: 'TrendingUp' },
-  ];
+  ]
 
   const getProductName = (productId: string) => {
-    const product = mockProducts.find((p) => p.id === productId);
-    return product?.name || 'N/A';
-  };
+    const product = products.find((p) => p.id === productId)
+    return product?.name || 'N/A'
+  }
 
   const getStoreName = (storeId: string) => {
-    const store = mockStores.find((s) => s.id === storeId);
-    return store?.name || 'N/A';
-  };
+    const store = stores.find((s) => s.id === storeId)
+    return store?.name || 'N/A'
+  }
 
   const filteredPromotions = useMemo(() => {
     return promotions.filter((promotion) => {
-      const productName = getProductName(promotion.productId);
+      const productName = getProductName(promotion.product_id)
       
       const searchMatch = searchTerm === '' || 
         productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        promotion.newBarcode.includes(searchTerm);
+        promotion.new_barcode.includes(searchTerm)
 
       const statusMatch = statusFilter === '' || 
-        (statusFilter === 'active' && promotion.isActive) ||
-        (statusFilter === 'inactive' && !promotion.isActive) ||
-        (statusFilter === 'visible' && promotion.isVisible) ||
-        (statusFilter === 'hidden' && !promotion.isVisible);
+        (statusFilter === 'active' && promotion.is_active) ||
+        (statusFilter === 'inactive' && !promotion.is_active) ||
+        (statusFilter === 'visible' && promotion.is_visible) ||
+        (statusFilter === 'hidden' && !promotion.is_visible)
 
-      const storeMatch = storeFilter === '' || promotion.storeId === storeFilter;
+      const storeMatch = storeFilter === '' || promotion.store_id === storeFilter
 
-      return searchMatch && statusMatch && storeMatch;
-    });
-  }, [promotions, searchTerm, statusFilter, storeFilter]);
+      return searchMatch && statusMatch && storeMatch
+    })
+  }, [promotions, searchTerm, statusFilter, storeFilter, products])
 
-  const handleCreatePromotion = (data: any) => {
-    const newPromotion = {
-      id: `promo-${Date.now()}`,
-      ...data,
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      createdBy: '1',
-      createdAt: new Date().toISOString(),
-    };
-
-    setPromotions([...promotions, newPromotion]);
-    alert('Promoção criada com sucesso!');
-  };
-
-  const handleToggleVisibility = (promotionId: string) => {
-    setPromotions(promotions.map(p => 
-      p.id === promotionId ? { ...p, isVisible: !p.isVisible } : p
-    ));
-  };
-
-  const handleDelete = (promotionId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta promoção?')) {
-      setPromotions(promotions.filter(p => p.id !== promotionId));
-      alert('Promoção excluída!');
+  const handleToggleVisibility = async (promotionId: string, currentVisibility: boolean) => {
+    try {
+      await toggleVisibility(promotionId, !currentVisibility)
+    } catch (error) {
+      alert('Erro ao alterar visibilidade')
     }
-  };
+  }
 
-  const totalPromotions = filteredPromotions.length;
-  const activePromotions = filteredPromotions.filter((p) => p.isActive).length;
-  const visiblePromotions = filteredPromotions.filter((p) => p.isVisible).length;
-  const totalDiscount = filteredPromotions.reduce((sum, p) => sum + p.discount, 0);
+  const handleDelete = async (promotionId: string) => {
+    if (confirm('Tem certeza que deseja excluir esta promoção?')) {
+      try {
+        await deletePromotion(promotionId)
+      } catch (error) {
+        alert('Erro ao excluir promoção')
+      }
+    }
+  }
+
+  const handleSuccess = () => {
+    refresh()
+  }
+
+  const totalPromotions = filteredPromotions.length
+  const activePromotions = filteredPromotions.filter((p) => p.is_active).length
+  const visiblePromotions = filteredPromotions.filter((p) => p.is_visible).length
+  const totalDiscount = filteredPromotions.length > 0
+    ? Math.round(filteredPromotions.reduce((sum, p) => sum + p.discount, 0) / filteredPromotions.length)
+    : 0
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
@@ -105,24 +100,24 @@ export default function GestorPromocoesPage() {
     { value: 'inactive', label: 'Inativas' },
     { value: 'visible', label: 'Visíveis' },
     { value: 'hidden', label: 'Ocultas' },
-  ];
+  ]
 
   const storeOptions = [
     { value: '', label: 'Todas as lojas' },
-    ...mockStores.map((store) => ({
+    ...stores.map((store) => ({
       value: store.id,
       label: store.name,
     })),
-  ];
+  ]
 
   const columns = [
     { 
-      key: 'productId', 
+      key: 'product_id', 
       label: 'Produto',
       render: (value: string) => getProductName(value)
     },
     { 
-      key: 'storeId', 
+      key: 'store_id', 
       label: 'Loja',
       render: (value: string) => getStoreName(value)
     },
@@ -132,16 +127,16 @@ export default function GestorPromocoesPage() {
       render: (value: number) => `${value}%`
     },
     { 
-      key: 'newPrice', 
+      key: 'new_price', 
       label: 'Novo Preço',
       render: (value: number) => new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       }).format(value)
     },
-    { key: 'newBarcode', label: 'Novo Código' },
+    { key: 'new_barcode', label: 'Novo Código' },
     { 
-      key: 'isVisible', 
+      key: 'is_visible', 
       label: 'Visibilidade',
       render: (value: boolean) => (
         <Badge variant={value ? 'success' : 'default'}>
@@ -150,7 +145,7 @@ export default function GestorPromocoesPage() {
       )
     },
     { 
-      key: 'isActive', 
+      key: 'is_active', 
       label: 'Status',
       render: (value: boolean) => (
         <Badge variant={value ? 'success' : 'danger'}>
@@ -165,26 +160,30 @@ export default function GestorPromocoesPage() {
         <div className={styles.actions}>
           <Button 
             variant="secondary" 
-            onClick={() => handleToggleVisibility(value)}
+            onClick={() => handleToggleVisibility(value, row.is_visible)}
           >
-            {row.isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+            {row.is_visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </Button>
           <Button variant="danger" onClick={() => handleDelete(value)}>
-            Excluir
+            <Trash2 size={16} />
           </Button>
         </div>
       )
     },
-  ];
+  ]
+
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Carregando promoções..." />
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Gestor'} 
           userRole="Gestor" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -238,9 +237,7 @@ export default function GestorPromocoesPage() {
                   </div>
                   <div className={styles.statContent}>
                     <p className={styles.statLabel}>Desconto Médio</p>
-                    <h2 className={styles.statValue}>
-                      {totalPromotions > 0 ? Math.round(totalDiscount / totalPromotions) : 0}%
-                    </h2>
+                    <h2 className={styles.statValue}>{totalDiscount}%</h2>
                   </div>
                 </div>
               </div>
@@ -282,8 +279,8 @@ export default function GestorPromocoesPage() {
       <CreatePromotionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreatePromotion}
+        onSuccess={handleSuccess}
       />
     </div>
-  );
+  )
 }

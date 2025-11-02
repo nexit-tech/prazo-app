@@ -1,34 +1,33 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Badge from '@/components/Badge/Badge';
-import Button from '@/components/Button/Button';
-import SearchBar from '@/components/SearchBar/SearchBar';
-import Select from '@/components/Select/Select';
-import { ArrowUpDown, ArrowUp, ArrowDown, ShoppingCart, Edit2, Trash2 } from 'lucide-react';
-import { mockProducts } from '@/mocks/products';
-import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
-import styles from './page.module.css';
+import { useState, useMemo } from 'react'
+import { ArrowUpDown, ArrowUp, ArrowDown, ShoppingCart, Edit2, Trash2 } from 'lucide-react'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Badge from '@/components/Badge/Badge'
+import Button from '@/components/Button/Button'
+import SearchBar from '@/components/SearchBar/SearchBar'
+import Select from '@/components/Select/Select'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import { useAuth } from '@/hooks/useAuth'
+import { useProducts } from '@/hooks/useProducts'
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
+import styles from './page.module.css'
 
-type SortOrder = 'asc' | 'desc' | null;
+type SortOrder = 'asc' | 'desc' | null
 
 export default function LojaProdutosPage() {
-  const router = useRouter();
-  const [userName] = useState('Ana Costa');
-  const storeId = 'store-1';
+  const { user, logout } = useAuth()
+  const { products, loading, deleteProduct, markAsSold } = useProducts({ 
+    storeId: user?.storeId || undefined,
+    isSold: false 
+  })
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -36,93 +35,99 @@ export default function LojaProdutosPage() {
     { label: 'Cadastrar Produto', href: '/loja/cadastrar', icon: 'Plus' },
     { label: 'Alertas', href: '/loja/alertas', icon: 'AlertTriangle' },
     { label: 'Etiquetas', href: '/loja/etiquetas', icon: 'Tag' },
-  ];
-
-  const storeProducts = mockProducts.filter((p) => p.storeId === storeId && !p.isSold);
+  ]
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
       if (sortOrder === 'asc') {
-        setSortOrder('desc');
+        setSortOrder('desc')
       } else if (sortOrder === 'desc') {
-        setSortColumn(null);
-        setSortOrder(null);
+        setSortColumn(null)
+        setSortOrder(null)
       }
     } else {
-      setSortColumn(column);
-      setSortOrder('asc');
+      setSortColumn(column)
+      setSortOrder('asc')
     }
-  };
+  }
 
   const getSortIcon = (column: string) => {
-    if (sortColumn !== column) return <ArrowUpDown size={14} />;
-    if (sortOrder === 'asc') return <ArrowUp size={14} />;
-    return <ArrowDown size={14} />;
-  };
+    if (sortColumn !== column) return <ArrowUpDown size={14} />
+    if (sortOrder === 'asc') return <ArrowUp size={14} />
+    return <ArrowDown size={14} />
+  }
 
   const filteredAndSortedProducts = useMemo(() => {
-    let result = storeProducts.filter((product) => {
+    let result = products.filter((product) => {
       const searchMatch = searchTerm === '' || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.barcode.includes(searchTerm) ||
-        product.internalCode.toLowerCase().includes(searchTerm.toLowerCase());
+        product.internal_code.toLowerCase().includes(searchTerm.toLowerCase())
 
       const statusMatch = statusFilter === '' || 
-        getExpirationCategory(product.expirationDate) === statusFilter;
+        getExpirationCategory(product.expiration_date) === statusFilter
 
       const categoryMatch = categoryFilter === '' || 
-        product.category === categoryFilter;
+        product.category === categoryFilter
 
-      return searchMatch && statusMatch && categoryMatch;
-    });
+      return searchMatch && statusMatch && categoryMatch
+    })
 
     if (sortColumn && sortOrder) {
       result.sort((a, b) => {
-        let aValue: string | number = '';
-        let bValue: string | number = '';
+        let aValue: string | number = ''
+        let bValue: string | number = ''
 
         if (sortColumn === 'name') {
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
         } else if (sortColumn === 'brand') {
-          aValue = a.brand.toLowerCase();
-          bValue = b.brand.toLowerCase();
-        } else if (sortColumn === 'currentPrice') {
-          aValue = a.currentPrice;
-          bValue = b.currentPrice;
+          aValue = a.brand.toLowerCase()
+          bValue = b.brand.toLowerCase()
+        } else if (sortColumn === 'current_price') {
+          aValue = a.current_price
+          bValue = b.current_price
         } else if (sortColumn === 'quantity') {
-          aValue = a.quantity;
-          bValue = b.quantity;
-        } else if (sortColumn === 'expirationDate') {
-          aValue = new Date(a.expirationDate).getTime();
-          bValue = new Date(b.expirationDate).getTime();
+          aValue = a.quantity
+          bValue = b.quantity
+        } else if (sortColumn === 'expiration_date') {
+          aValue = new Date(a.expiration_date).getTime()
+          bValue = new Date(b.expiration_date).getTime()
         }
 
-        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-      });
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
+        return 0
+      })
     }
 
-    return result;
-  }, [storeProducts, searchTerm, statusFilter, categoryFilter, sortColumn, sortOrder]);
+    return result
+  }, [products, searchTerm, statusFilter, categoryFilter, sortColumn, sortOrder])
 
   const handleEdit = (productId: string) => {
-    alert(`Editar produto ${productId}`);
-  };
+    alert('Funcionalidade de edição será implementada em breve')
+  }
 
-  const handleDelete = (productId: string) => {
+  const handleDelete = async (productId: string) => {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
-      alert(`Produto ${productId} excluído!`);
+      try {
+        await deleteProduct(productId)
+      } catch (error) {
+        alert('Erro ao excluir produto')
+      }
     }
-  };
+  }
 
-  const handleSell = (productId: string) => {
+  const handleSell = async (productId: string) => {
     if (confirm('Confirmar venda deste produto?')) {
-      alert(`Produto ${productId} vendido!`);
+      try {
+        await markAsSold(productId)
+      } catch (error) {
+        alert('Erro ao marcar como vendido')
+      }
     }
-  };
+  }
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
@@ -131,28 +136,29 @@ export default function LojaProdutosPage() {
     { value: 'urgente', label: 'Urgente' },
     { value: 'pouco-urgente', label: 'Pouco Urgente' },
     { value: 'analise', label: 'Em Análise' },
-  ];
+  ]
 
   const categoryOptions = [
     { value: '', label: 'Todas as categorias' },
-    { value: 'laticinios', label: 'Laticínios' },
-    { value: 'padaria', label: 'Padaria' },
-    { value: 'carnes', label: 'Carnes' },
-    { value: 'bebidas', label: 'Bebidas' },
-    { value: 'higiene', label: 'Higiene' },
-    { value: 'limpeza', label: 'Limpeza' },
-    { value: 'hortifruti', label: 'Hortifruti' },
-    { value: 'outros', label: 'Outros' },
-  ];
+    { value: 'Medicamentos', label: 'Medicamentos' },
+    { value: 'Higiene e Beleza', label: 'Higiene e Beleza' },
+    { value: 'Suplementos', label: 'Suplementos' },
+    { value: 'Higiene', label: 'Higiene' },
+    { value: 'Equipamentos', label: 'Equipamentos' },
+  ]
+
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Carregando produtos..." />
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Loja'} 
           userRole="Loja" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -224,18 +230,18 @@ export default function LojaProdutosPage() {
                         </th>
                         <th>
                           <button 
-                            className={`${styles.sortButton} ${sortColumn === 'currentPrice' ? styles.active : ''}`}
-                            onClick={() => handleSort('currentPrice')}
+                            className={`${styles.sortButton} ${sortColumn === 'current_price' ? styles.active : ''}`}
+                            onClick={() => handleSort('current_price')}
                           >
-                            Preço Atual {getSortIcon('currentPrice')}
+                            Preço Atual {getSortIcon('current_price')}
                           </button>
                         </th>
                         <th>
                           <button 
-                            className={`${styles.sortButton} ${sortColumn === 'expirationDate' ? styles.active : ''}`}
-                            onClick={() => handleSort('expirationDate')}
+                            className={`${styles.sortButton} ${sortColumn === 'expiration_date' ? styles.active : ''}`}
+                            onClick={() => handleSort('expiration_date')}
                           >
-                            Validade {getSortIcon('expirationDate')}
+                            Validade {getSortIcon('expiration_date')}
                           </button>
                         </th>
                         <th>Status</th>
@@ -245,24 +251,24 @@ export default function LojaProdutosPage() {
                     <tbody>
                       {filteredAndSortedProducts.length > 0 ? (
                         filteredAndSortedProducts.map((product) => {
-                          const category = getExpirationCategory(product.expirationDate);
-                          const statusLabel = getExpirationLabel(category);
-                          const variant = getExpirationBadgeVariant(category);
+                          const category = getExpirationCategory(product.expiration_date)
+                          const statusLabel = getExpirationLabel(category)
+                          const variant = getExpirationBadgeVariant(category)
                           
                           return (
                             <tr key={product.id}>
                               <td>{product.name}</td>
                               <td>{product.barcode}</td>
-                              <td>{product.internalCode}</td>
+                              <td>{product.internal_code}</td>
                               <td>{product.brand}</td>
                               <td>{product.quantity}</td>
                               <td>
                                 {new Intl.NumberFormat('pt-BR', {
                                   style: 'currency',
                                   currency: 'BRL',
-                                }).format(product.currentPrice)}
+                                }).format(product.current_price)}
                               </td>
-                              <td>{formatDaysRemaining(product.expirationDate)}</td>
+                              <td>{formatDaysRemaining(product.expiration_date)}</td>
                               <td>
                                 <Badge variant={variant}>{statusLabel}</Badge>
                               </td>
@@ -280,7 +286,7 @@ export default function LojaProdutosPage() {
                                 </div>
                               </td>
                             </tr>
-                          );
+                          )
                         })
                       ) : (
                         <tr>
@@ -298,5 +304,5 @@ export default function LojaProdutosPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }

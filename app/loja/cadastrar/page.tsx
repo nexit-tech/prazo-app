@@ -1,29 +1,30 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Input from '@/components/Input/Input';
-import DatePicker from '@/components/DatePicker/DatePicker';
-import AutocompleteInput from '@/components/AutocompleteInput/AutocompleteInput';
-import Button from '@/components/Button/Button';
-import styles from './page.module.css';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Input from '@/components/Input/Input'
+import DatePicker from '@/components/DatePicker/DatePicker'
+import AutocompleteInput from '@/components/AutocompleteInput/AutocompleteInput'
+import Button from '@/components/Button/Button'
+import { useAuth } from '@/hooks/useAuth'
+import { useProducts } from '@/hooks/useProducts'
+import styles from './page.module.css'
 
 export default function LojaCadastrarPage() {
-  const router = useRouter();
-  const [userName] = useState('Ana Costa');
+  const router = useRouter()
+  const { user, logout } = useAuth()
+  const { createProduct } = useProducts()
+  const [loading, setLoading] = useState(false)
 
   const [categories, setCategories] = useState([
-    { value: 'laticinios', label: 'Laticínios' },
-    { value: 'padaria', label: 'Padaria' },
-    { value: 'carnes', label: 'Carnes' },
-    { value: 'bebidas', label: 'Bebidas' },
-    { value: 'higiene', label: 'Higiene' },
-    { value: 'limpeza', label: 'Limpeza' },
-    { value: 'hortifruti', label: 'Hortifruti' },
-    { value: 'outros', label: 'Outros' },
-  ]);
+    { value: 'Medicamentos', label: 'Medicamentos' },
+    { value: 'Higiene e Beleza', label: 'Higiene e Beleza' },
+    { value: 'Suplementos', label: 'Suplementos' },
+    { value: 'Higiene', label: 'Higiene' },
+    { value: 'Equipamentos', label: 'Equipamentos' },
+  ])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,11 +36,7 @@ export default function LojaCadastrarPage() {
     price: '',
     expirationDate: '',
     batch: '',
-  });
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  })
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -47,34 +44,62 @@ export default function LojaCadastrarPage() {
     { label: 'Cadastrar Produto', href: '/loja/cadastrar', icon: 'Plus' },
     { label: 'Alertas', href: '/loja/alertas', icon: 'AlertTriangle' },
     { label: 'Etiquetas', href: '/loja/etiquetas', icon: 'Tag' },
-  ];
+  ]
 
   const handleCreateCategory = (newCategory: string) => {
-    const categoryValue = newCategory.toLowerCase().replace(/\s+/g, '-');
     const newCategoryOption = {
-      value: categoryValue,
+      value: newCategory,
       label: newCategory,
-    };
-    setCategories([...categories, newCategoryOption]);
-    setFormData({ ...formData, category: categoryValue });
-  };
+    }
+    setCategories([...categories, newCategoryOption])
+    setFormData({ ...formData, category: newCategory })
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Produto cadastrado com sucesso!');
-    router.push('/loja/produtos');
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  const today = new Date().toISOString().split('T')[0];
+    if (!user?.storeId) {
+      alert('Erro: Loja não identificada')
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      await createProduct({
+        name: formData.name,
+        category: formData.category,
+        brand: formData.brand,
+        barcode: formData.barcode,
+        internal_code: formData.internalCode,
+        quantity: parseInt(formData.quantity),
+        expiration_date: formData.expirationDate,
+        batch: formData.batch,
+        original_price: parseFloat(formData.price),
+        current_price: parseFloat(formData.price),
+        store_id: user.storeId,
+        is_sold: false,
+      })
+
+      alert('Produto cadastrado com sucesso!')
+      router.push('/loja/produtos')
+    } catch (error) {
+      alert('Erro ao cadastrar produto. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const today = new Date().toISOString().split('T')[0]
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Loja'} 
           userRole="Loja" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -90,19 +115,21 @@ export default function LojaCadastrarPage() {
                   <div className={styles.row}>
                     <Input
                       label="Nome do Produto"
-                      placeholder="Ex: Leite Integral 1L"
+                      placeholder="Ex: Dipirona 500mg 20 comprimidos"
                       value={formData.name}
                       onChange={(value) => setFormData({ ...formData, name: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                     <Input
                       label="Marca"
-                      placeholder="Ex: Marca A"
+                      placeholder="Ex: Genérico"
                       value={formData.brand}
                       onChange={(value) => setFormData({ ...formData, brand: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -119,30 +146,33 @@ export default function LojaCadastrarPage() {
                     />
                     <Input
                       label="Lote"
-                      placeholder="Ex: LT20251105"
+                      placeholder="Ex: LT20251105A"
                       value={formData.batch}
                       onChange={(value) => setFormData({ ...formData, batch: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                   </div>
 
                   <div className={styles.row}>
                     <Input
                       label="Código de Barras"
-                      placeholder="Ex: 7891234567890"
+                      placeholder="Ex: 7891234567001"
                       value={formData.barcode}
                       onChange={(value) => setFormData({ ...formData, barcode: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                     <Input
                       label="Código Interno"
-                      placeholder="Ex: LT001"
+                      placeholder="Ex: MED001"
                       value={formData.internalCode}
                       onChange={(value) => setFormData({ ...formData, internalCode: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -150,20 +180,22 @@ export default function LojaCadastrarPage() {
                     <Input
                       type="number"
                       label="Quantidade"
-                      placeholder="Ex: 50"
+                      placeholder="Ex: 15"
                       value={formData.quantity}
                       onChange={(value) => setFormData({ ...formData, quantity: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                     <Input
                       type="number"
                       label="Preço (R$)"
-                      placeholder="Ex: 4.50"
+                      placeholder="Ex: 8.90"
                       value={formData.price}
                       onChange={(value) => setFormData({ ...formData, price: value })}
                       fullWidth
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -177,11 +209,16 @@ export default function LojaCadastrarPage() {
                   />
 
                   <div className={styles.buttonGroup}>
-                    <Button type="button" variant="outline" onClick={() => router.back()}>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => router.back()}
+                      disabled={loading}
+                    >
                       Cancelar
                     </Button>
-                    <Button type="submit" variant="primary">
-                      Cadastrar Produto
+                    <Button type="submit" variant="primary" disabled={loading}>
+                      {loading ? 'Cadastrando...' : 'Cadastrar Produto'}
                     </Button>
                   </div>
                 </form>
@@ -191,5 +228,5 @@ export default function LojaCadastrarPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }

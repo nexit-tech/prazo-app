@@ -1,31 +1,27 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
-import { Plus, Eye, Edit2, Power } from 'lucide-react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Table from '@/components/Table/Table';
-import Badge from '@/components/Badge/Badge';
-import Button from '@/components/Button/Button';
-import SearchBar from '@/components/SearchBar/SearchBar';
-import Select from '@/components/Select/Select';
-import CreateStoreModal from './components/CreateStoreModal/CreateStoreModal';
-import { mockStores } from '@/mocks/stores';
-import { formatDate } from '@/utils/dateHelpers';
-import styles from './page.module.css';
+import { useState, useMemo } from 'react'
+import { Plus, Eye, Edit2, Power } from 'lucide-react'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Table from '@/components/Table/Table'
+import Badge from '@/components/Badge/Badge'
+import Button from '@/components/Button/Button'
+import SearchBar from '@/components/SearchBar/SearchBar'
+import Select from '@/components/Select/Select'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import CreateStoreModal from './components/CreateStoreModal/CreateStoreModal'
+import { useAuth } from '@/hooks/useAuth'
+import { useStores } from '@/hooks/useStores'
+import { formatDate } from '@/utils/dateHelpers'
+import styles from './page.module.css'
 
 export default function GestorLojasPage() {
-  const router = useRouter();
-  const [userName] = useState('Carlos Silva');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [stores, setStores] = useState(mockStores);
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  const { user, logout } = useAuth()
+  const { stores, loading, toggleActive, refresh } = useStores()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -33,7 +29,7 @@ export default function GestorLojasPage() {
     { label: 'Produtos', href: '/gestor/produtos', icon: 'Package' },
     { label: 'Promoções', href: '/gestor/promocoes', icon: 'Tag' },
     { label: 'Relatórios', href: '/gestor/relatorios', icon: 'TrendingUp' },
-  ];
+  ]
 
   const filteredStores = useMemo(() => {
     return stores.filter((store) => {
@@ -42,59 +38,54 @@ export default function GestorLojasPage() {
         store.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         store.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
         store.phone.includes(searchTerm) ||
-        (store.email && store.email.toLowerCase().includes(searchTerm.toLowerCase()));
+        store.email.toLowerCase().includes(searchTerm.toLowerCase())
 
       const statusMatch = statusFilter === '' || 
-        (statusFilter === 'active' && store.isActive) ||
-        (statusFilter === 'inactive' && !store.isActive);
+        (statusFilter === 'active' && store.is_active) ||
+        (statusFilter === 'inactive' && !store.is_active)
 
-      return searchMatch && statusMatch;
-    });
-  }, [stores, searchTerm, statusFilter]);
-
-  const handleCreateStore = (data: any) => {
-    const newStore = {
-      id: `store-${Date.now()}`,
-      ...data,
-      isActive: true,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setStores([...stores, newStore]);
-    alert('Loja cadastrada com sucesso!');
-  };
+      return searchMatch && statusMatch
+    })
+  }, [stores, searchTerm, statusFilter])
 
   const handleEdit = (storeId: string) => {
-    alert(`Editar loja ${storeId}`);
-  };
+    alert(`Funcionalidade de edição será implementada em breve`)
+  }
 
-  const handleToggleStatus = (storeId: string) => {
-    setStores(stores.map(s => 
-      s.id === storeId ? { ...s, isActive: !s.isActive } : s
-    ));
-  };
+  const handleToggleStatus = async (storeId: string, currentStatus: boolean) => {
+    if (confirm(`Deseja realmente ${currentStatus ? 'desativar' : 'ativar'} esta loja?`)) {
+      try {
+        await toggleActive(storeId, !currentStatus)
+      } catch (error) {
+        alert('Erro ao alterar status da loja')
+      }
+    }
+  }
 
   const handleViewDetails = (storeId: string) => {
-    alert(`Ver detalhes da loja ${storeId}`);
-  };
+    alert(`Funcionalidade de visualização será implementada em breve`)
+  }
+
+  const handleSuccess = () => {
+    refresh()
+  }
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
     { value: 'active', label: 'Ativas' },
     { value: 'inactive', label: 'Inativas' },
-  ];
+  ]
 
-  const activeStores = stores.filter((s) => s.isActive).length;
-  const inactiveStores = stores.filter((s) => !s.isActive).length;
+  const activeStores = stores.filter((s) => s.is_active).length
+  const inactiveStores = stores.filter((s) => !s.is_active).length
 
   const columns = [
     { key: 'code', label: 'Código' },
     { key: 'name', label: 'Nome' },
     { key: 'email', label: 'Email' },
-    { key: 'address', label: 'Endereço' },
     { key: 'phone', label: 'Telefone' },
     { 
-      key: 'isActive', 
+      key: 'is_active', 
       label: 'Status',
       render: (value: boolean) => (
         <Badge variant={value ? 'success' : 'danger'}>
@@ -103,7 +94,7 @@ export default function GestorLojasPage() {
       )
     },
     { 
-      key: 'createdAt', 
+      key: 'created_at', 
       label: 'Cadastro',
       render: (value: string) => formatDate(value)
     },
@@ -119,24 +110,28 @@ export default function GestorLojasPage() {
             <Edit2 size={16} />
           </Button>
           <Button 
-            variant={row.isActive ? 'danger' : 'primary'} 
-            onClick={() => handleToggleStatus(value)}
+            variant={row.is_active ? 'danger' : 'primary'} 
+            onClick={() => handleToggleStatus(value, row.is_active)}
           >
             <Power size={16} />
           </Button>
         </div>
       )
     },
-  ];
+  ]
+
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Carregando lojas..." />
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Gestor'} 
           userRole="Gestor" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -180,7 +175,7 @@ export default function GestorLojasPage() {
                 <SearchBar
                   value={searchTerm}
                   onChange={setSearchTerm}
-                  placeholder="Buscar por nome, código, email, endereço ou telefone..."
+                  placeholder="Buscar por nome, código, email..."
                   fullWidth
                 />
                 <div className={styles.filterRow}>
@@ -207,8 +202,8 @@ export default function GestorLojasPage() {
       <CreateStoreModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateStore}
+        onSuccess={handleSuccess}
       />
     </div>
-  );
+  )
 }

@@ -1,25 +1,24 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { AlertTriangle, Package, Tag, Trash2 } from 'lucide-react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Table from '@/components/Table/Table';
-import Badge from '@/components/Badge/Badge';
-import Button from '@/components/Button/Button';
-import { mockProducts } from '@/mocks/products';
-import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
-import styles from './page.module.css';
+import { useMemo } from 'react'
+import { AlertTriangle, Package, Tag, Trash2 } from 'lucide-react'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Table from '@/components/Table/Table'
+import Badge from '@/components/Badge/Badge'
+import Button from '@/components/Button/Button'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import { useAuth } from '@/hooks/useAuth'
+import { useProducts } from '@/hooks/useProducts'
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
+import styles from './page.module.css'
 
 export default function LojaAlertasPage() {
-  const router = useRouter();
-  const [userName] = useState('Ana Costa');
-  const storeId = 'store-1';
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  const { user, logout } = useAuth()
+  const { products, loading, deleteProduct } = useProducts({ 
+    storeId: user?.storeId || undefined,
+    isSold: false 
+  })
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -27,35 +26,43 @@ export default function LojaAlertasPage() {
     { label: 'Cadastrar Produto', href: '/loja/cadastrar', icon: 'Plus' },
     { label: 'Alertas', href: '/loja/alertas', icon: 'AlertTriangle' },
     { label: 'Etiquetas', href: '/loja/etiquetas', icon: 'Tag' },
-  ];
+  ]
 
-  const storeProducts = mockProducts.filter((p) => p.storeId === storeId && !p.isSold);
-  
-  const criticalProducts = storeProducts.filter((p) => {
-    const category = getExpirationCategory(p.expirationDate);
-    return category === 'declarar' || category === 'emergencia' || category === 'urgente';
-  });
+  const criticalProducts = useMemo(() => {
+    return products.filter((p) => {
+      const category = getExpirationCategory(p.expiration_date)
+      return category === 'declarar' || category === 'emergencia' || category === 'urgente'
+    })
+  }, [products])
 
-  const declarar = criticalProducts.filter((p) => getExpirationCategory(p.expirationDate) === 'declarar').length;
-  const emergencia = criticalProducts.filter((p) => getExpirationCategory(p.expirationDate) === 'emergencia').length;
-  const urgente = criticalProducts.filter((p) => getExpirationCategory(p.expirationDate) === 'urgente').length;
+  const stats = useMemo(() => {
+    const declarar = criticalProducts.filter((p) => getExpirationCategory(p.expiration_date) === 'declarar').length
+    const emergencia = criticalProducts.filter((p) => getExpirationCategory(p.expiration_date) === 'emergencia').length
+    const urgente = criticalProducts.filter((p) => getExpirationCategory(p.expiration_date) === 'urgente').length
+
+    return { declarar, emergencia, urgente }
+  }, [criticalProducts])
 
   const handlePromotion = (productId: string) => {
-    alert(`Criar promoção para produto ${productId}`);
-  };
+    alert('Funcionalidade de criar promoção será implementada em breve')
+  }
 
-  const handleDiscard = (productId: string) => {
+  const handleDiscard = async (productId: string) => {
     if (confirm('Tem certeza que deseja declarar baixa deste produto?')) {
-      alert(`Baixa declarada para produto ${productId}`);
+      try {
+        await deleteProduct(productId)
+      } catch (error) {
+        alert('Erro ao declarar baixa')
+      }
     }
-  };
+  }
 
   const columns = [
     { key: 'name', label: 'Produto' },
     { key: 'brand', label: 'Marca' },
     { key: 'quantity', label: 'Quantidade' },
     { 
-      key: 'currentPrice', 
+      key: 'current_price', 
       label: 'Preço',
       render: (value: number) => new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -63,18 +70,18 @@ export default function LojaAlertasPage() {
       }).format(value)
     },
     { 
-      key: 'expirationDate', 
+      key: 'expiration_date', 
       label: 'Validade',
       render: (value: string) => formatDaysRemaining(value)
     },
     { 
-      key: 'expirationDate', 
+      key: 'expiration_date', 
       label: 'Status',
       render: (value: string) => {
-        const category = getExpirationCategory(value);
-        const label = getExpirationLabel(category);
-        const variant = getExpirationBadgeVariant(category);
-        return <Badge variant={variant}>{label}</Badge>;
+        const category = getExpirationCategory(value)
+        const label = getExpirationLabel(category)
+        const variant = getExpirationBadgeVariant(category)
+        return <Badge variant={variant}>{label}</Badge>
       }
     },
     {
@@ -91,16 +98,20 @@ export default function LojaAlertasPage() {
         </div>
       )
     },
-  ];
+  ]
+
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Carregando alertas..." />
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Loja'} 
           userRole="Loja" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -118,7 +129,7 @@ export default function LojaAlertasPage() {
                   </div>
                   <div className={styles.alertContent}>
                     <p className={styles.alertLabel}>Declarar Baixa</p>
-                    <h3 className={styles.alertValue}>{declarar}</h3>
+                    <h3 className={styles.alertValue}>{stats.declarar}</h3>
                     <span className={styles.alertDescription}>1-15 dias</span>
                   </div>
                 </div>
@@ -129,7 +140,7 @@ export default function LojaAlertasPage() {
                   </div>
                   <div className={styles.alertContent}>
                     <p className={styles.alertLabel}>Emergência</p>
-                    <h3 className={styles.alertValue}>{emergencia}</h3>
+                    <h3 className={styles.alertValue}>{stats.emergencia}</h3>
                     <span className={styles.alertDescription}>16-29 dias</span>
                   </div>
                 </div>
@@ -140,7 +151,7 @@ export default function LojaAlertasPage() {
                   </div>
                   <div className={styles.alertContent}>
                     <p className={styles.alertLabel}>Urgente</p>
-                    <h3 className={styles.alertValue}>{urgente}</h3>
+                    <h3 className={styles.alertValue}>{stats.urgente}</h3>
                     <span className={styles.alertDescription}>30-59 dias</span>
                   </div>
                 </div>
@@ -158,5 +169,5 @@ export default function LojaAlertasPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }

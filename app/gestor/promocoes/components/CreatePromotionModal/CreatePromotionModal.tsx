@@ -1,99 +1,116 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Modal from '@/components/Modal/Modal';
-import Input from '@/components/Input/Input';
-import Select from '@/components/Select/Select';
-import Button from '@/components/Button/Button';
-import { mockProducts } from '@/mocks/products';
-import { mockStores } from '@/mocks/stores';
-import styles from './CreatePromotionModal.module.css';
+import { useState, useEffect, useMemo } from 'react'
+import Modal from '@/components/Modal/Modal'
+import Input from '@/components/Input/Input'
+import Select from '@/components/Select/Select'
+import Button from '@/components/Button/Button'
+import { useProducts } from '@/hooks/useProducts'
+import { useStores } from '@/hooks/useStores'
+import { usePromotions } from '@/hooks/usePromotions'
+import { useAuth } from '@/hooks/useAuth'
+import styles from './CreatePromotionModal.module.css'
 
 interface CreatePromotionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: any) => void;
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
 }
 
 export default function CreatePromotionModal({
   isOpen,
   onClose,
-  onSubmit,
+  onSuccess,
 }: CreatePromotionModalProps) {
+  const { user } = useAuth()
+  const { products } = useProducts({ isSold: false })
+  const { stores } = useStores()
+  const { createPromotion } = usePromotions()
+  const [loading, setLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     productId: '',
     storeId: '',
     discount: '',
-  });
+  })
 
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [calculatedPrice, setCalculatedPrice] = useState(0)
 
-  const productOptions = mockProducts
-    .filter((p) => !p.isSold)
-    .map((p) => ({
+  const selectedProduct = useMemo(() => {
+    return products.find((p) => p.id === formData.productId)
+  }, [products, formData.productId])
+
+  const productOptions = useMemo(() => {
+    return products.map((p) => ({
       value: p.id,
       label: `${p.name} - ${p.brand} (${new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
-      }).format(p.currentPrice)})`,
-    }));
+      }).format(p.current_price)})`,
+    }))
+  }, [products])
 
-  const storeOptions = mockStores.map((s) => ({
-    value: s.id,
-    label: s.name,
-  }));
-
-  useEffect(() => {
-    if (formData.productId) {
-      const product = mockProducts.find((p) => p.id === formData.productId);
-      setSelectedProduct(product);
-    } else {
-      setSelectedProduct(null);
-    }
-  }, [formData.productId]);
+  const storeOptions = useMemo(() => {
+    return stores.map((s) => ({
+      value: s.id,
+      label: s.name,
+    }))
+  }, [stores])
 
   useEffect(() => {
     if (selectedProduct && formData.discount) {
-      const discountValue = parseFloat(formData.discount);
-      const newPrice = selectedProduct.currentPrice * (1 - discountValue / 100);
-      setCalculatedPrice(newPrice);
+      const discountValue = parseFloat(formData.discount)
+      const newPrice = selectedProduct.current_price * (1 - discountValue / 100)
+      setCalculatedPrice(newPrice)
     } else {
-      setCalculatedPrice(0);
+      setCalculatedPrice(0)
     }
-  }, [selectedProduct, formData.discount]);
+  }, [selectedProduct, formData.discount])
 
-  const handleSubmit = () => {
-    const newBarcode = `PROMO${Date.now()}`;
-    const newInternalCode = `${selectedProduct.internalCode}-PROMO`;
+  const handleSubmit = async () => {
+    if (!selectedProduct || !user) return
 
-    const promotionData = {
-      productId: formData.productId,
-      storeId: formData.storeId,
-      discount: parseFloat(formData.discount),
-      newPrice: calculatedPrice,
-      newBarcode,
-      newInternalCode,
-      isVisible: true,
-      isActive: true,
-    };
+    const newBarcode = `PROMO${Date.now()}`
+    const newInternalCode = `${selectedProduct.internal_code}-P${formData.discount}`
 
-    onSubmit(promotionData);
-    handleClose();
-  };
+    const endDate = new Date(selectedProduct.expiration_date)
+    endDate.setDate(endDate.getDate() - 2)
+
+    try {
+      setLoading(true)
+      await createPromotion({
+        product_id: formData.productId,
+        store_id: formData.storeId,
+        discount: parseFloat(formData.discount),
+        new_price: calculatedPrice,
+        new_barcode: newBarcode,
+        new_internal_code: newInternalCode,
+        start_date: new Date().toISOString(),
+        end_date: endDate.toISOString(),
+        is_visible: true,
+        is_active: true,
+        created_by: user.id,
+      })
+      onSuccess()
+      handleClose()
+    } catch (error) {
+      alert('Erro ao criar promoção. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleClose = () => {
     setFormData({
       productId: '',
       storeId: '',
       discount: '',
-    });
-    setSelectedProduct(null);
-    setCalculatedPrice(0);
-    onClose();
-  };
+    })
+    setCalculatedPrice(0)
+    onClose()
+  }
 
-  const isValid = Boolean(formData.productId && formData.storeId && formData.discount);
+  const isValid = Boolean(formData.productId && formData.storeId && formData.discount)
 
   return (
     <Modal
@@ -103,15 +120,15 @@ export default function CreatePromotionModal({
       size="large"
       footer={
         <>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
             Cancelar
           </Button>
           <Button 
             variant="primary" 
             onClick={handleSubmit}
-            disabled={!isValid}
+            disabled={!isValid || loading}
           >
-            Criar Promoção
+            {loading ? 'Criando...' : 'Criar Promoção'}
           </Button>
         </>
       }
@@ -161,7 +178,7 @@ export default function CreatePromotionModal({
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
-                }).format(selectedProduct.currentPrice)}
+                }).format(selectedProduct.current_price)}
               </span>
             </div>
 
@@ -185,5 +202,5 @@ export default function CreatePromotionModal({
         )}
       </div>
     </Modal>
-  );
+  )
 }

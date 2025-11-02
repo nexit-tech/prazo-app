@@ -1,31 +1,28 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
-import { Eye } from 'lucide-react';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Card from '@/components/Card/Card';
-import Table from '@/components/Table/Table';
-import Badge from '@/components/Badge/Badge';
-import Button from '@/components/Button/Button';
-import SearchBar from '@/components/SearchBar/SearchBar';
-import Select from '@/components/Select/Select';
-import { mockProducts } from '@/mocks/products';
-import { mockStores } from '@/mocks/stores';
-import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers';
-import styles from './page.module.css';
+import { useState, useMemo } from 'react'
+import { Eye } from 'lucide-react'
+import Sidebar from '@/components/Sidebar/Sidebar'
+import Card from '@/components/Card/Card'
+import Table from '@/components/Table/Table'
+import Badge from '@/components/Badge/Badge'
+import Button from '@/components/Button/Button'
+import SearchBar from '@/components/SearchBar/SearchBar'
+import Select from '@/components/Select/Select'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import { useAuth } from '@/hooks/useAuth'
+import { useProducts } from '@/hooks/useProducts'
+import { useStores } from '@/hooks/useStores'
+import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
+import styles from './page.module.css'
 
 export default function GestorProdutosPage() {
-  const router = useRouter();
-  const [userName] = useState('Carlos Silva');
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [storeFilter, setStoreFilter] = useState('');
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
+  const { user, logout } = useAuth()
+  const { products, loading } = useProducts({ isSold: false })
+  const { stores } = useStores()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [storeFilter, setStoreFilter] = useState('')
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -33,34 +30,32 @@ export default function GestorProdutosPage() {
     { label: 'Produtos', href: '/gestor/produtos', icon: 'Package' },
     { label: 'Promoções', href: '/gestor/promocoes', icon: 'Tag' },
     { label: 'Relatórios', href: '/gestor/relatorios', icon: 'TrendingUp' },
-  ];
+  ]
 
   const getStoreName = (storeId: string) => {
-    const store = mockStores.find((s) => s.id === storeId);
-    return store?.name || 'N/A';
-  };
-
-  const allProducts = mockProducts.filter((p) => !p.isSold);
+    const store = stores.find((s) => s.id === storeId)
+    return store?.name || 'N/A'
+  }
 
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
+    return products.filter((product) => {
       const searchMatch = searchTerm === '' || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.barcode.includes(searchTerm);
+        product.barcode.includes(searchTerm)
 
       const statusMatch = statusFilter === '' || 
-        getExpirationCategory(product.expirationDate) === statusFilter;
+        getExpirationCategory(product.expiration_date) === statusFilter
 
-      const storeMatch = storeFilter === '' || product.storeId === storeFilter;
+      const storeMatch = storeFilter === '' || product.store_id === storeFilter
 
-      return searchMatch && statusMatch && storeMatch;
-    });
-  }, [allProducts, searchTerm, statusFilter, storeFilter]);
+      return searchMatch && statusMatch && storeMatch
+    })
+  }, [products, searchTerm, statusFilter, storeFilter])
 
   const handleViewDetails = (productId: string) => {
-    alert(`Ver detalhes do produto ${productId}`);
-  };
+    alert('Funcionalidade de visualização será implementada em breve')
+  }
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
@@ -69,15 +64,15 @@ export default function GestorProdutosPage() {
     { value: 'urgente', label: 'Urgente' },
     { value: 'pouco-urgente', label: 'Pouco Urgente' },
     { value: 'analise', label: 'Em Análise' },
-  ];
+  ]
 
   const storeOptions = [
     { value: '', label: 'Todas as lojas' },
-    ...mockStores.map((store) => ({
+    ...stores.map((store) => ({
       value: store.id,
       label: store.name,
     })),
-  ];
+  ]
 
   const columns = [
     { key: 'name', label: 'Produto' },
@@ -85,7 +80,7 @@ export default function GestorProdutosPage() {
     { key: 'brand', label: 'Marca' },
     { key: 'quantity', label: 'Quantidade' },
     { 
-      key: 'currentPrice', 
+      key: 'current_price', 
       label: 'Preço',
       render: (value: number) => new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -93,23 +88,23 @@ export default function GestorProdutosPage() {
       }).format(value)
     },
     { 
-      key: 'storeId', 
+      key: 'store_id', 
       label: 'Loja',
       render: (value: string) => getStoreName(value)
     },
     { 
-      key: 'expirationDate', 
+      key: 'expiration_date', 
       label: 'Validade',
       render: (value: string) => formatDaysRemaining(value)
     },
     { 
-      key: 'expirationDate', 
+      key: 'expiration_date', 
       label: 'Status',
       render: (value: string) => {
-        const category = getExpirationCategory(value);
-        const label = getExpirationLabel(category);
-        const variant = getExpirationBadgeVariant(category);
-        return <Badge variant={variant}>{label}</Badge>;
+        const category = getExpirationCategory(value)
+        const label = getExpirationLabel(category)
+        const variant = getExpirationBadgeVariant(category)
+        return <Badge variant={variant}>{label}</Badge>
       }
     },
     {
@@ -121,16 +116,20 @@ export default function GestorProdutosPage() {
         </Button>
       )
     },
-  ];
+  ]
+
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Carregando produtos..." />
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
         <Sidebar 
           menuItems={menuItems} 
-          userName={userName} 
+          userName={user?.fullName || 'Gestor'} 
           userRole="Gestor" 
-          onLogout={handleLogout} 
+          onLogout={logout} 
         />
         
         <main className={styles.main}>
@@ -177,5 +176,5 @@ export default function GestorProdutosPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }
