@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Tag, TrendingUp, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { Tag, TrendingUp, Eye, EyeOff, Plus, Trash2, Download } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import Card from '@/components/Card/Card'
 import Table from '@/components/Table/Table'
@@ -11,6 +11,8 @@ import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
 import CreatePromotionModal from './components/CreatePromotionModal/CreatePromotionModal'
+import LabelPreview from './components/LabelPreview/LabelPreview'
+import BulkLabelGenerator from './components/BulkLabelGenerator/BulkLabelGenerator'
 import { useAuth } from '@/hooks/useAuth'
 import { usePromotions } from '@/hooks/usePromotions'
 import { useProducts } from '@/hooks/useProducts'
@@ -26,6 +28,8 @@ export default function GestorPromocoesPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [storeFilter, setStoreFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -38,6 +42,10 @@ export default function GestorPromocoesPage() {
   const getProductName = (productId: string) => {
     const product = products.find((p) => p.id === productId)
     return product?.name || 'N/A'
+  }
+
+  const getProductById = (productId: string) => {
+    return products.find((p) => p.id === productId)
   }
 
   const getStoreName = (storeId: string) => {
@@ -85,6 +93,10 @@ export default function GestorPromocoesPage() {
 
   const handleSuccess = () => {
     refresh()
+  }
+
+  const handleViewLabel = (promotionId: string) => {
+    setSelectedPromotion(promotionId)
   }
 
   const totalPromotions = filteredPromotions.length
@@ -158,6 +170,9 @@ export default function GestorPromocoesPage() {
       label: 'Ações',
       render: (value: string, row: any) => (
         <div className={styles.actions}>
+          <Button variant="primary" onClick={() => handleViewLabel(value)}>
+            <Tag size={16} />
+          </Button>
           <Button 
             variant="secondary" 
             onClick={() => handleToggleVisibility(value, row.is_visible)}
@@ -171,6 +186,15 @@ export default function GestorPromocoesPage() {
       )
     },
   ]
+
+  const selectedPromotionData = useMemo(() => {
+    if (!selectedPromotion) return null
+    const promotion = promotions.find(p => p.id === selectedPromotion)
+    if (!promotion) return null
+    const product = getProductById(promotion.product_id)
+    if (!product) return null
+    return { promotion, product }
+  }, [selectedPromotion, promotions, products])
 
   if (loading) {
     return <LoadingSpinner fullScreen text="Carregando promoções..." />
@@ -192,12 +216,18 @@ export default function GestorPromocoesPage() {
               <div className={styles.header}>
                 <div>
                   <h1 className={styles.title}>Promoções</h1>
-                  <p className={styles.subtitle}>Gerencie descontos e promoções</p>
+                  <p className={styles.subtitle}>Gerencie descontos e etiquetas</p>
                 </div>
-                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                  <Plus size={18} />
-                  Nova Promoção
-                </Button>
+                <div className={styles.headerActions}>
+                  <Button variant="secondary" onClick={() => setIsBulkModalOpen(true)}>
+                    <Download size={18} />
+                    Gerar em Lote
+                  </Button>
+                  <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                    <Plus size={18} />
+                    Nova Promoção
+                  </Button>
+                </div>
               </div>
 
               <div className={styles.grid}>
@@ -268,9 +298,19 @@ export default function GestorPromocoesPage() {
                 </div>
               </div>
 
-              <Card padding="medium">
-                <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
-              </Card>
+              <div className={styles.tableSection}>
+                <Card padding="medium">
+                  <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
+                </Card>
+
+                {selectedPromotionData && (
+                  <LabelPreview
+                    promotion={selectedPromotionData.promotion}
+                    product={selectedPromotionData.product}
+                    storeName={getStoreName(selectedPromotionData.promotion.store_id)}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -280,6 +320,14 @@ export default function GestorPromocoesPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSuccess}
+      />
+
+      <BulkLabelGenerator
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        promotions={filteredPromotions}
+        getProductById={getProductById}
+        getStoreName={getStoreName}
       />
     </div>
   )

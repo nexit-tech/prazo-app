@@ -11,6 +11,9 @@ import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
 import CreateStoreModal from './components/CreateStoreModal/CreateStoreModal'
+import ViewStoreModal from './components/ViewStoreModal/ViewStoreModal'
+import EditStoreModal from './components/EditStoreModal/EditStoreModal'
+import DeleteStoreModal from './components/DeleteStoreModal/DeleteStoreModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useStores } from '@/hooks/useStores'
 import { formatDate } from '@/utils/dateHelpers'
@@ -21,7 +24,12 @@ export default function GestorLojasPage() {
   const { stores, loading, toggleActive, refresh } = useStores()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null)
+  const [selectedStore, setSelectedStore] = useState<{ id: string; name: string; code: string } | null>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -48,8 +56,19 @@ export default function GestorLojasPage() {
     })
   }, [stores, searchTerm, statusFilter])
 
+  const handleViewDetails = (storeId: string) => {
+    setSelectedStoreId(storeId)
+    setIsViewModalOpen(true)
+  }
+
   const handleEdit = (storeId: string) => {
-    alert(`Funcionalidade de edição será implementada em breve`)
+    setSelectedStoreId(storeId)
+    setIsEditModalOpen(true)
+  }
+
+  const handleDeleteClick = (store: { id: string; name: string; code: string }) => {
+    setSelectedStore(store)
+    setIsDeleteModalOpen(true)
   }
 
   const handleToggleStatus = async (storeId: string, currentStatus: boolean) => {
@@ -60,10 +79,6 @@ export default function GestorLojasPage() {
         alert('Erro ao alterar status da loja')
       }
     }
-  }
-
-  const handleViewDetails = (storeId: string) => {
-    alert(`Funcionalidade de visualização será implementada em breve`)
   }
 
   const handleSuccess = () => {
@@ -142,7 +157,7 @@ export default function GestorLojasPage() {
                   <h1 className={styles.title}>Lojas</h1>
                   <p className={styles.subtitle}>Gerencie todas as filiais</p>
                 </div>
-                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
                   <Plus size={18} />
                   Nova Loja
                 </Button>
@@ -151,22 +166,22 @@ export default function GestorLojasPage() {
               <div className={styles.statsGrid}>
                 <Card padding="medium">
                   <div>
-                    <p className={styles.resultCount}>Total de Lojas</p>
-                    <h3 className={styles.title}>{stores.length}</h3>
+                    <p className={styles.statLabel}>Total de Lojas</p>
+                    <h3 className={styles.statValue}>{stores.length}</h3>
                   </div>
                 </Card>
 
                 <Card padding="medium">
                   <div>
-                    <p className={styles.resultCount}>Lojas Ativas</p>
-                    <h3 className={styles.title}>{activeStores}</h3>
+                    <p className={styles.statLabel}>Lojas Ativas</p>
+                    <h3 className={styles.statValue}>{activeStores}</h3>
                   </div>
                 </Card>
 
                 <Card padding="medium">
                   <div>
-                    <p className={styles.resultCount}>Lojas Inativas</p>
-                    <h3 className={styles.title}>{inactiveStores}</h3>
+                    <p className={styles.statLabel}>Lojas Inativas</p>
+                    <h3 className={styles.statValue}>{inactiveStores}</h3>
                   </div>
                 </Card>
               </div>
@@ -200,8 +215,41 @@ export default function GestorLojasPage() {
       </div>
 
       <CreateStoreModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
+
+      {selectedStoreId && (
+        <>
+          <ViewStoreModal
+            isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false)
+              setSelectedStoreId(null)
+            }}
+            storeId={selectedStoreId}
+          />
+
+          <EditStoreModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false)
+              setSelectedStoreId(null)
+            }}
+            storeId={selectedStoreId}
+            onSuccess={handleSuccess}
+          />
+        </>
+      )}
+
+      <DeleteStoreModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          setSelectedStore(null)
+        }}
+        store={selectedStore}
         onSuccess={handleSuccess}
       />
     </div>

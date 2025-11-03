@@ -10,6 +10,11 @@ export interface StoreFilters {
   searchTerm?: string
 }
 
+export interface StoreWithUser extends Store {
+  user_id?: string
+  user_email?: string
+}
+
 export const storesService = {
   async getAll(filters?: StoreFilters) {
     let query = supabase
@@ -48,6 +53,29 @@ export const storesService = {
     return data as Store
   },
 
+  async getWithUser(id: string): Promise<StoreWithUser> {
+    const store = await this.getById(id)
+
+    const { data: userData } = await supabase
+      .from('users_metadata')
+      .select('id, full_name')
+      .eq('store_id', id)
+      .eq('role', 'loja')
+      .single()
+
+    if (userData) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(userData.id)
+      
+      return {
+        ...store,
+        user_id: userData.id,
+        user_email: authUser.user?.email,
+      }
+    }
+
+    return store
+  },
+
   async create(store: StoreInsert) {
     const { data, error } = await supabase
       .from('stores')
@@ -78,6 +106,17 @@ export const storesService = {
   },
 
   async delete(id: string) {
+    const { data: userData } = await supabase
+      .from('users_metadata')
+      .select('id')
+      .eq('store_id', id)
+      .eq('role', 'loja')
+      .single()
+
+    if (userData) {
+      await supabase.auth.admin.deleteUser(userData.id)
+    }
+
     const { error } = await supabase
       .from('stores')
       .delete()
@@ -108,5 +147,35 @@ export const storesService = {
     const nextNumber = (number + 1).toString().padStart(3, '0')
     
     return `DL${nextNumber}`
+  },
+
+  async checkEmailExists(email: string, excludeId?: string) {
+    let query = supabase
+      .from('stores')
+      .select('id')
+      .eq('email', email)
+
+    if (excludeId) {
+      query = query.neq('id', excludeId)
+    }
+
+    const { data } = await query.single()
+
+    return !!data
+  },
+
+  async checkCodeExists(code: string, excludeId?: string) {
+    let query = supabase
+      .from('stores')
+      .select('id')
+      .eq('code', code)
+
+    if (excludeId) {
+      query = query.neq('id', excludeId)
+    }
+
+    const { data } = await query.single()
+
+    return !!data
   },
 }

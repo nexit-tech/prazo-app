@@ -1,7 +1,5 @@
-'use client'
-
 import { useState, useEffect } from 'react'
-import { storesService, StoreFilters } from '@/services/stores.service'
+import { storesService, StoreFilters, StoreWithUser } from '@/services/stores.service'
 import { Database } from '@/lib/supabase/types'
 
 type Store = Database['public']['Tables']['stores']['Row']
@@ -104,6 +102,20 @@ export const useStores = (filters?: StoreFilters) => {
     }
   }
 
+  const getStoreWithUser = async (id: string): Promise<StoreWithUser> => {
+    try {
+      setLoading(true)
+      setError(null)
+      return await storesService.getWithUser(id)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar loja'
+      setError(errorMessage)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const refresh = () => {
     fetchStores()
   }
@@ -117,6 +129,7 @@ export const useStores = (filters?: StoreFilters) => {
     deleteStore,
     toggleActive,
     generateCode,
+    getStoreWithUser,
     refresh,
   }
 }

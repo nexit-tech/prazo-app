@@ -1,0 +1,145 @@
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--border-radius-lg);
+  background: var(--color-white);
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1200px;
+}
+
+.table thead {
+  background: var(--color-light-gray);
+}
+
+.table thead tr th:first-child {
+  border-top-left-radius: var(--border-radius-md);
+}
+
+.table thead tr th:last-child {
+  border-top-right-radius: var(--border-radius-md);
+}
+
+.table th {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--color-gray);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray);
+  font-size: 0.875rem;
+  color: var(--color-black);
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: var(--transition);
+  background: var(--color-white);
+}
+
+.table tbody tr:hover {
+  background: #FAFBFC;
+}
+
+.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--border-radius-md);
+}
+
+.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--border-radius-md);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-medium-gray);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: var(--transition);
+}
+
+.sortButton:hover {
+  color: var(--color-black);
+}
+
+.sortButton.active {
+  color: var(--color-black);
+}
+
+.sortButton svg {
+  flex-shrink: 0;
+}
+
+.productName {
+  font-weight: 600;
+  color: var(--color-black);
+  max-width: 250px;
+}
+
+.categoryBadge {
+  display: inline-flex;
+  padding: 0.25rem 0.625rem;
+  background: var(--color-light-gray);
+  color: var(--color-dark-gray);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.centered {
+  text-align: center;
+  font-weight: 600;
+}
+
+.price {
+  font-weight: 600;
+  color: #27AE60;
+}
+
+.expiration {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: var(--spacing-2xl) !important;
+  color: var(--color-medium-gray);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .table {
+    min-width: 1000px;
+  }
+  
+  .table th,
+  .table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8125rem;
+  }
+}

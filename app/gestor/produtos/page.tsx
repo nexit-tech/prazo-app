@@ -1,28 +1,34 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Eye } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import Card from '@/components/Card/Card'
-import Table from '@/components/Table/Table'
-import Badge from '@/components/Badge/Badge'
-import Button from '@/components/Button/Button'
-import SearchBar from '@/components/SearchBar/SearchBar'
-import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import ProductFilters from './components/ProductFilters/ProductFilters'
+import ProductTable from './components/ProductTable/ProductTable'
 import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useProducts'
 import { useStores } from '@/hooks/useStores'
-import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
+import { getDaysUntilExpiration, getExpirationCategory } from '@/utils/dateHelpers'
 import styles from './page.module.css'
+
+type SortOrder = 'asc' | 'desc' | null
 
 export default function GestorProdutosPage() {
   const { user, logout } = useAuth()
   const { products, loading } = useProducts({ isSold: false })
   const { stores } = useStores()
+  
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
   const [storeFilter, setStoreFilter] = useState('')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [minDays, setMinDays] = useState('')
+  const [maxDays, setMaxDays] = useState('')
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -37,21 +43,100 @@ export default function GestorProdutosPage() {
     return store?.name || 'N/A'
   }
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set(products.map(p => p.category))
+    return Array.from(categories).sort()
+  }, [products])
+
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = products.filter((product) => {
       const searchMatch = searchTerm === '' || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.barcode.includes(searchTerm)
+        product.barcode.includes(searchTerm) ||
+        product.internal_code.toLowerCase().includes(searchTerm.toLowerCase())
 
       const statusMatch = statusFilter === '' || 
         getExpirationCategory(product.expiration_date) === statusFilter
 
-      const storeMatch = storeFilter === '' || product.store_id === storeFilter
+      const categoryMatch = categoryFilter === '' || 
+        product.category === categoryFilter
 
-      return searchMatch && statusMatch && storeMatch
+      const storeMatch = storeFilter === '' || 
+        product.store_id === storeFilter
+
+      const priceMatch = 
+        (minPrice === '' || product.current_price >= parseFloat(minPrice)) &&
+        (maxPrice === '' || product.current_price <= parseFloat(maxPrice))
+
+      const daysUntilExpiration = getDaysUntilExpiration(product.expiration_date)
+      const daysMatch =
+        (minDays === '' || daysUntilExpiration >= parseInt(minDays)) &&
+        (maxDays === '' || daysUntilExpiration <= parseInt(maxDays))
+
+      return searchMatch && statusMatch && categoryMatch && storeMatch && priceMatch && daysMatch
     })
-  }, [products, searchTerm, statusFilter, storeFilter])
+
+    if (sortColumn && sortOrder) {
+      result.sort((a, b) => {
+        let aValue: string | number = ''
+        let bValue: string | number = ''
+
+        if (sortColumn === 'name') {
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
+        } else if (sortColumn === 'brand') {
+          aValue = a.brand.toLowerCase()
+          bValue = b.brand.toLowerCase()
+        } else if (sortColumn === 'category') {
+          aValue = a.category.toLowerCase()
+          bValue = b.category.toLowerCase()
+        } else if (sortColumn === 'current_price') {
+          aValue = a.current_price
+          bValue = b.current_price
+        } else if (sortColumn === 'quantity') {
+          aValue = a.quantity
+          bValue = b.quantity
+        } else if (sortColumn === 'expiration_date') {
+          aValue = new Date(a.expiration_date).getTime()
+          bValue = new Date(b.expiration_date).getTime()
+        } else if (sortColumn === 'store_id') {
+          aValue = getStoreName(a.store_id).toLowerCase()
+          bValue = getStoreName(b.store_id).toLowerCase()
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    return result
+  }, [products, searchTerm, statusFilter, categoryFilter, storeFilter, minPrice, maxPrice, minDays, maxDays, sortColumn, sortOrder, stores])
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      if (sortOrder === 'asc') {
+        setSortOrder('desc')
+      } else if (sortOrder === 'desc') {
+        setSortColumn(null)
+        setSortOrder(null)
+      }
+    } else {
+      setSortColumn(column)
+      setSortOrder('asc')
+    }
+  }
+
+  const handleClearFilters = () => {
+    setStatusFilter('')
+    setCategoryFilter('')
+    setStoreFilter('')
+    setMinPrice('')
+    setMaxPrice('')
+    setMinDays('')
+    setMaxDays('')
+  }
 
   const handleViewDetails = (productId: string) => {
     alert('Funcionalidade de visualização será implementada em breve')
@@ -66,56 +151,17 @@ export default function GestorProdutosPage() {
     { value: 'analise', label: 'Em Análise' },
   ]
 
+  const categoryOptions = [
+    { value: '', label: 'Todas as categorias' },
+    ...uniqueCategories.map(cat => ({ value: cat, label: cat }))
+  ]
+
   const storeOptions = [
     { value: '', label: 'Todas as lojas' },
     ...stores.map((store) => ({
       value: store.id,
       label: store.name,
     })),
-  ]
-
-  const columns = [
-    { key: 'name', label: 'Produto' },
-    { key: 'barcode', label: 'Código de Barras' },
-    { key: 'brand', label: 'Marca' },
-    { key: 'quantity', label: 'Quantidade' },
-    { 
-      key: 'current_price', 
-      label: 'Preço',
-      render: (value: number) => new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-      }).format(value)
-    },
-    { 
-      key: 'store_id', 
-      label: 'Loja',
-      render: (value: string) => getStoreName(value)
-    },
-    { 
-      key: 'expiration_date', 
-      label: 'Validade',
-      render: (value: string) => formatDaysRemaining(value)
-    },
-    { 
-      key: 'expiration_date', 
-      label: 'Status',
-      render: (value: string) => {
-        const category = getExpirationCategory(value)
-        const label = getExpirationLabel(category)
-        const variant = getExpirationBadgeVariant(category)
-        return <Badge variant={variant}>{label}</Badge>
-      }
-    },
-    {
-      key: 'id',
-      label: 'Ações',
-      render: (value: string) => (
-        <Button variant="primary" onClick={() => handleViewDetails(value)}>
-          <Eye size={16} />
-        </Button>
-      )
-    },
   ]
 
   if (loading) {
@@ -136,40 +182,43 @@ export default function GestorProdutosPage() {
           <div className={styles.mainCard}>
             <div className={styles.content}>
               <div className={styles.header}>
-                <div>
-                  <h1 className={styles.title}>Produtos</h1>
-                  <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
-                </div>
+                <h1 className={styles.title}>Produtos</h1>
+                <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
               </div>
 
-              <div className={styles.filters}>
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Buscar por nome, marca, código..."
-                  fullWidth
-                />
-                <div className={styles.filterRow}>
-                  <Select
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={statusOptions}
-                    placeholder="Filtrar por status"
-                  />
-                  <Select
-                    value={storeFilter}
-                    onChange={setStoreFilter}
-                    options={storeOptions}
-                    placeholder="Filtrar por loja"
-                  />
-                  <div className={styles.resultCount}>
-                    {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
+              <ProductFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                storeFilter={storeFilter}
+                onStoreChange={setStoreFilter}
+                minPrice={minPrice}
+                onMinPriceChange={setMinPrice}
+                maxPrice={maxPrice}
+                onMaxPriceChange={setMaxPrice}
+                minDays={minDays}
+                onMinDaysChange={setMinDays}
+                maxDays={maxDays}
+                onMaxDaysChange={setMaxDays}
+                onClearFilters={handleClearFilters}
+                statusOptions={statusOptions}
+                categoryOptions={categoryOptions}
+                storeOptions={storeOptions}
+                resultsCount={filteredAndSortedProducts.length}
+              />
 
               <Card padding="medium">
-                <Table columns={columns} data={filteredProducts} emptyMessage="Nenhum produto encontrado" />
+                <ProductTable
+                  products={filteredAndSortedProducts}
+                  getStoreName={getStoreName}
+                  onViewDetails={handleViewDetails}
+                  sortColumn={sortColumn}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
+                />
               </Card>
             </div>
           </div>

@@ -1,0 +1,102 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl);
+  background: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 2px solid transparent;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-gray);
+  transition: var(--transition);
+}
+
+.card.up::before {
+  background: #27AE60;
+}
+
+.card.down::before {
+  background: #E74C3C;
+}
+
+.card.neutral::before {
+  background: var(--color-medium-gray);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft-hover);
+  border-color: var(--color-light-gray);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-medium-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.trendIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-light-gray);
+}
+
+.trendUp {
+  color: #27AE60;
+}
+
+.trendDown {
+  color: #E74C3C;
+}
+
+.trendNeutral {
+  color: var(--color-medium-gray);
+}
+
+.value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-black);
+  line-height: 1.2;
+}
+
+.change {
+  font-size: 0.75rem;
+  color: var(--color-medium-gray);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  .value {
+    font-size: 1.5rem;
+  }
+}

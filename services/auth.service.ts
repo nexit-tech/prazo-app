@@ -13,6 +13,13 @@ export interface AuthUser {
   fullName: string
 }
 
+export interface CreateStoreUserData {
+  email: string
+  password: string
+  fullName: string
+  storeId: string
+}
+
 export const authService = {
   async login(credentials: LoginCredentials) {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -21,15 +28,12 @@ export const authService = {
     })
 
     if (authError) {
-      console.error('🔴 Erro de autenticação:', authError)
       throw new Error(authError.message)
     }
 
     if (!authData.user) {
       throw new Error('Falha na autenticação')
     }
-
-    console.log('✅ Auth bem-sucedida, buscando metadata...')
 
     await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -40,11 +44,8 @@ export const authService = {
       .single()
 
     if (metadataError || !metadata) {
-      console.error('🔴 Erro ao buscar metadata:', metadataError)
       throw new Error('Erro ao carregar dados do usuário')
     }
-
-    console.log('✅ Metadata carregada:', metadata)
 
     return {
       id: authData.user.id,
@@ -91,5 +92,91 @@ export const authService = {
   async getSession() {
     const { data: { session } } = await supabase.auth.getSession()
     return session
+  },
+
+  async createStoreUser(userData: CreateStoreUserData) {
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      password: userData.password,
+      email_confirm: true,
+    })
+
+    if (authError) {
+      throw new Error(`Erro ao criar usuário: ${authError.message}`)
+    }
+
+    if (!authData.user) {
+      throw new Error('Falha ao criar usuário')
+    }
+
+    const { error: metadataError } = await supabase
+      .from('users_metadata')
+      .insert({
+        id: authData.user.id,
+        role: 'loja',
+        store_id: userData.storeId,
+        full_name: userData.fullName,
+      })
+
+    if (metadataError) {
+      await supabase.auth.admin.deleteUser(authData.user.id)
+      throw new Error(`Erro ao criar metadata: ${metadataError.message}`)
+    }
+
+    return {
+      userId: authData.user.id,
+      email: authData.user.email!,
+    }
+  },
+
+  async deleteStoreUser(userId: string) {
+    const { error: metadataError } = await supabase
+      .from('users_metadata')
+      .delete()
+      .eq('id', userId)
+
+    if (metadataError) {
+      throw new Error(`Erro ao deletar metadata: ${metadataError.message}`)
+    }
+
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+
+    if (authError) {
+      throw new Error(`Erro ao deletar usuário: ${authError.message}`)
+    }
+  },
+
+  async updateStoreUser(userId: string, updates: { email?: string; password?: string; fullName?: string }) {
+    const authUpdates: { email?: string; password?: string } = {}
+    
+    if (updates.email) {
+      authUpdates.email = updates.email
+    }
+    
+    if (updates.password) {
+      authUpdates.password = updates.password
+    }
+
+    if (Object.keys(authUpdates).length > 0) {
+      const { error: authError } = await supabase.auth.admin.updateUserById(
+        userId,
+        authUpdates
+      )
+
+      if (authError) {
+        throw new Error(`Erro ao atualizar usuário: ${authError.message}`)
+      }
+    }
+
+    if (updates.fullName) {
+      const { error: metadataError } = await supabase
+        .from('users_metadata')
+        .update({ full_name: updates.fullName })
+        .eq('id', userId)
+
+      if (metadataError) {
+        throw new Error(`Erro ao atualizar metadata: ${metadataError.message}`)
+      }
+    }
   },
 }
