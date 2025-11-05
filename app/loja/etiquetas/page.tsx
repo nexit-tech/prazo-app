@@ -1,25 +1,33 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Tag, Download, Eye, Printer } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Tag, Download, Eye, Printer, Plus } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import Card from '@/components/Card/Card'
 import Table from '@/components/Table/Table'
 import Badge from '@/components/Badge/Badge'
 import Button from '@/components/Button/Button'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import LabelPreviewModal from '@/components/LabelPreviewModal/LabelPreviewModal'
+import BulkLabelGenerator from '@/components/BulkLabelGenerator/BulkLabelGenerator'
 import { useAuth } from '@/hooks/useAuth'
 import { usePromotions } from '@/hooks/usePromotions'
 import { useProducts } from '@/hooks/useProducts'
+import { useStores } from '@/hooks/useStores'
 import styles from './page.module.css'
 
 export default function LojaEtiquetasPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { promotions, loading } = usePromotions({ 
     storeId: user?.storeId || undefined,
     isVisible: true 
   })
   const { products } = useProducts()
+  const { stores } = useStores()
+  
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false)
+  const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -33,6 +41,15 @@ export default function LojaEtiquetasPage() {
     const product = products.find((p) => p.id === productId)
     return product?.name || 'N/A'
   }
+  
+  const getProductById = (productId: string) => {
+    return products.find((p) => p.id === productId)
+  }
+
+  const getStoreName = (storeId: string) => {
+    const store = stores.find((s) => s.id === storeId)
+    return store?.name || 'N/A'
+  }
 
   const stats = useMemo(() => {
     const totalLabels = promotions.length
@@ -44,12 +61,14 @@ export default function LojaEtiquetasPage() {
     return { totalLabels, activeLabels, averageDiscount }
   }, [promotions])
 
-  const handleDownload = (promotionId: string) => {
-    alert('Funcionalidade de download será implementada em breve')
+  const handleViewLabel = (promotionId: string) => {
+    setSelectedPromotion(promotionId)
+    setIsLabelModalOpen(true)
   }
 
-  const handlePrint = (promotionId: string) => {
-    alert('Funcionalidade de impressão será implementada em breve')
+  const handleCloseLabelModal = () => {
+    setIsLabelModalOpen(false)
+    setSelectedPromotion(null)
   }
 
   const columns = [
@@ -86,16 +105,22 @@ export default function LojaEtiquetasPage() {
       label: 'Ações',
       render: (value: string) => (
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => handleDownload(value)}>
-            <Download size={16} />
-          </Button>
-          <Button variant="secondary" onClick={() => handlePrint(value)}>
-            <Printer size={16} />
+          <Button variant="primary" onClick={() => handleViewLabel(value)}>
+            <Tag size={16} />
           </Button>
         </div>
       )
     },
   ]
+
+  const selectedPromotionData = useMemo(() => {
+    if (!selectedPromotion) return null
+    const promotion = promotions.find(p => p.id === selectedPromotion)
+    if (!promotion) return null
+    const product = getProductById(promotion.product_id)
+    if (!product) return null
+    return { promotion, product }
+  }, [selectedPromotion, promotions, products])
 
   if (loading) {
     return <LoadingSpinner fullScreen text="Carregando etiquetas..." />
@@ -104,19 +129,22 @@ export default function LojaEtiquetasPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Loja'} 
-          userRole="Loja" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
             <div className={styles.content}>
               <div className={styles.header}>
-                <h1 className={styles.title}>Etiquetas</h1>
-                <p className={styles.subtitle}>Baixe e imprima etiquetas de promoção</p>
+                <div>
+                  <h1 className={styles.title}>Etiquetas</h1>
+                  <p className={styles.subtitle}>Baixe e imprima etiquetas de promoção</p>
+                </div>
+                <div className={styles.headerActions}>
+                  <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
+                    <Download size={18} />
+                    Gerar em Lote
+                  </Button>
+                </div>
               </div>
 
               <div className={styles.grid}>
@@ -151,17 +179,37 @@ export default function LojaEtiquetasPage() {
                 </div>
               </div>
 
-              <Card padding="medium">
-                <Table 
-                  columns={columns} 
-                  data={promotions} 
-                  emptyMessage="Nenhuma etiqueta disponível" 
-                />
-              </Card>
+              <div className={styles.tableSection}>
+                <Card padding="medium">
+                  <Table 
+                    columns={columns} 
+                    data={promotions} 
+                    emptyMessage="Nenhuma etiqueta disponível" 
+                  />
+                </Card>
+              </div>
             </div>
           </div>
         </main>
       </div>
+
+      <BulkLabelGenerator
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        promotions={promotions}
+        getProductById={getProductById}
+        getStoreName={getStoreName}
+      />
+
+      {selectedPromotionData && (
+        <LabelPreviewModal
+          isOpen={isLabelModalOpen}
+          onClose={handleCloseLabelModal}
+          promotion={selectedPromotionData.promotion}
+          product={selectedPromotionData.product}
+          storeName={getStoreName(selectedPromotionData.promotion.store_id)}
+        />
+      )}
     </div>
   )
 }

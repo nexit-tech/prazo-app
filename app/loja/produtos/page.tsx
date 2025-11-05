@@ -9,15 +9,17 @@ import Button from '@/components/Button/Button'
 import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useProducts'
 import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
 import styles from './page.module.css'
 
 type SortOrder = 'asc' | 'desc' | null
+type ModalType = 'sell' | 'delete' | null
 
 export default function LojaProdutosPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { products, loading, deleteProduct, markAsSold } = useProducts({ 
     storeId: user?.storeId || undefined,
     isSold: false 
@@ -28,6 +30,12 @@ export default function LojaProdutosPage() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>(null)
+  
+  const [modalState, setModalState] = useState<{ type: ModalType; productId: string | null }>({
+    type: null,
+    productId: null,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -39,9 +47,8 @@ export default function LojaProdutosPage() {
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
-      if (sortOrder === 'asc') {
-        setSortOrder('desc')
-      } else if (sortOrder === 'desc') {
+      if (sortOrder === 'asc') setSortOrder('desc')
+      else if (sortOrder === 'desc') {
         setSortColumn(null)
         setSortOrder(null)
       }
@@ -78,7 +85,6 @@ export default function LojaProdutosPage() {
       result.sort((a, b) => {
         let aValue: string | number = ''
         let bValue: string | number = ''
-
         if (sortColumn === 'name') {
           aValue = a.name.toLowerCase()
           bValue = b.name.toLowerCase()
@@ -95,13 +101,11 @@ export default function LojaProdutosPage() {
           aValue = new Date(a.expiration_date).getTime()
           bValue = new Date(b.expiration_date).getTime()
         }
-
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
         return 0
       })
     }
-
     return result
   }, [products, searchTerm, statusFilter, categoryFilter, sortColumn, sortOrder])
 
@@ -109,23 +113,25 @@ export default function LojaProdutosPage() {
     alert('Funcionalidade de edição será implementada em breve')
   }
 
-  const handleDelete = async (productId: string) => {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-      try {
-        await deleteProduct(productId)
-      } catch (error) {
-        alert('Erro ao excluir produto')
-      }
-    }
+  const handleModalClose = () => {
+    setModalState({ type: null, productId: null })
   }
 
-  const handleSell = async (productId: string) => {
-    if (confirm('Confirmar venda deste produto?')) {
-      try {
-        await markAsSold(productId)
-      } catch (error) {
-        alert('Erro ao marcar como vendido')
+  const handleModalConfirm = async () => {
+    if (!modalState.productId || !modalState.type) return
+
+    setIsSubmitting(true)
+    try {
+      if (modalState.type === 'delete') {
+        await deleteProduct(modalState.productId)
+      } else if (modalState.type === 'sell') {
+        await markAsSold(modalState.productId)
       }
+    } catch (error) {
+      alert(`Erro ao ${modalState.type === 'delete' ? 'excluir' : 'vender'} produto`)
+    } finally {
+      setIsSubmitting(false)
+      handleModalClose()
     }
   }
 
@@ -154,12 +160,7 @@ export default function LojaProdutosPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Loja'} 
-          userRole="Loja" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
@@ -274,13 +275,13 @@ export default function LojaProdutosPage() {
                               </td>
                               <td>
                                 <div className={styles.actions}>
-                                  <Button variant="primary" onClick={() => handleSell(product.id)}>
+                                  <Button variant="primary" onClick={() => setModalState({ type: 'sell', productId: product.id })}>
                                     <ShoppingCart size={16} />
                                   </Button>
                                   <Button variant="secondary" onClick={() => handleEdit(product.id)}>
                                     <Edit2 size={16} />
                                   </Button>
-                                  <Button variant="danger" onClick={() => handleDelete(product.id)}>
+                                  <Button variant="danger" onClick={() => setModalState({ type: 'delete', productId: product.id })}>
                                     <Trash2 size={16} />
                                   </Button>
                                 </div>
@@ -303,6 +304,21 @@ export default function LojaProdutosPage() {
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={modalState.type !== null}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title={modalState.type === 'sell' ? 'Confirmar Venda' : 'Excluir Produto'}
+        message={
+          modalState.type === 'sell' 
+            ? 'Confirmar venda deste produto?' 
+            : 'Tem certeza que deseja excluir este produto?'
+        }
+        confirmText={modalState.type === 'sell' ? 'Confirmar' : 'Excluir'}
+        variant={modalState.type === 'sell' ? 'primary' : 'danger'}
+        loading={isSubmitting}
+      />
     </div>
   )
 }

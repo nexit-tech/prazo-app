@@ -11,7 +11,7 @@ import { getExpirationCategory } from '@/utils/dateHelpers'
 import styles from './page.module.css'
 
 export default function LojaDashboard() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { products, loading: productsLoading } = useProducts({ 
     storeId: user?.storeId || undefined,
     isSold: false 
@@ -80,12 +80,7 @@ export default function LojaDashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Loja'} 
-          userRole="Loja" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>

@@ -1,0 +1,36 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza horizontalmente */
+  justify-content: center;
+  text-align: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.dangerIcon {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  color: #C0392B; /* Corrigido para cor exata do Badge */
+}
+
+.primaryIcon {
+  background: var(--color-light-gray);
+  color: var(--color-black);
+}
+
+.message {
+  font-size: 1rem;
+  color: var(--color-dark-gray);
+  line-height: 1.6;
+  max-width: 300px;
+}

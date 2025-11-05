@@ -9,13 +9,11 @@ import ExpirationChart from './components/ExpirationChart/ExpirationChart'
 import SalesChart from './components/SalesChart/SalesChart'
 import CategoryChart from './components/CategoryChart/CategoryChart'
 import ReportFilters from './components/ReportFilters/ReportFilters'
-import { useAuth } from '@/hooks/useAuth'
 import { useStores } from '@/hooks/useStores'
 import { reportsService, ReportFilters as Filters } from '@/services/reports.service'
 import styles from './page.module.css'
 
 export default function GestorRelatoriosPage() {
-  const { user, logout } = useAuth()
   const { stores } = useStores()
   const [loading, setLoading] = useState(true)
   const [storeFilter, setStoreFilter] = useState('')
@@ -95,12 +93,7 @@ export default function GestorRelatoriosPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Gestor'} 
-          userRole="Gestor" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>

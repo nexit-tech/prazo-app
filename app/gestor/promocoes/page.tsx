@@ -10,17 +10,18 @@ import Button from '@/components/Button/Button'
 import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'
 import CreatePromotionModal from './components/CreatePromotionModal/CreatePromotionModal'
-import LabelPreview from './components/LabelPreview/LabelPreview'
-import BulkLabelGenerator from './components/BulkLabelGenerator/BulkLabelGenerator'
-import { useAuth } from '@/hooks/useAuth'
+import LabelPreviewModal from '@/components/LabelPreviewModal/LabelPreviewModal'
+import BulkLabelGenerator from '@/components/BulkLabelGenerator/BulkLabelGenerator'
 import { usePromotions } from '@/hooks/usePromotions'
 import { useProducts } from '@/hooks/useProducts'
 import { useStores } from '@/hooks/useStores'
 import styles from './page.module.css'
 
+type ModalType = 'delete' | 'toggleVisibility' | null
+
 export default function GestorPromocoesPage() {
-  const { user, logout } = useAuth()
   const { promotions, loading, toggleVisibility, deletePromotion, refresh } = usePromotions()
   const { products } = useProducts()
   const { stores } = useStores()
@@ -29,6 +30,14 @@ export default function GestorPromocoesPage() {
   const [storeFilter, setStoreFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false)
+  
+  const [modalState, setModalState] = useState<{ 
+    type: ModalType; 
+    itemId: string | null; 
+    currentValue?: boolean 
+  }>({ type: null, itemId: null })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedPromotion, setSelectedPromotion] = useState<string | null>(null)
 
   const menuItems = [
@@ -73,21 +82,29 @@ export default function GestorPromocoesPage() {
     })
   }, [promotions, searchTerm, statusFilter, storeFilter, products])
 
-  const handleToggleVisibility = async (promotionId: string, currentVisibility: boolean) => {
-    try {
-      await toggleVisibility(promotionId, !currentVisibility)
-    } catch (error) {
-      alert('Erro ao alterar visibilidade')
-    }
+  const handleOpenModal = (type: ModalType, itemId: string, currentValue?: boolean) => {
+    setModalState({ type, itemId, currentValue })
   }
 
-  const handleDelete = async (promotionId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta promoção?')) {
-      try {
-        await deletePromotion(promotionId)
-      } catch (error) {
-        alert('Erro ao excluir promoção')
+  const handleModalClose = () => {
+    setModalState({ type: null, itemId: null })
+  }
+
+  const handleModalConfirm = async () => {
+    if (!modalState.itemId || !modalState.type) return
+
+    setIsSubmitting(true)
+    try {
+      if (modalState.type === 'delete') {
+        await deletePromotion(modalState.itemId)
+      } else if (modalState.type === 'toggleVisibility') {
+        await toggleVisibility(modalState.itemId, !modalState.currentValue)
       }
+    } catch (error) {
+      alert('Ocorreu um erro ao executar a ação.')
+    } finally {
+      setIsSubmitting(false)
+      handleModalClose()
     }
   }
 
@@ -97,6 +114,12 @@ export default function GestorPromocoesPage() {
 
   const handleViewLabel = (promotionId: string) => {
     setSelectedPromotion(promotionId)
+    setIsLabelModalOpen(true)
+  }
+
+  const handleCloseLabelModal = () => {
+    setIsLabelModalOpen(false)
+    setSelectedPromotion(null)
   }
 
   const totalPromotions = filteredPromotions.length
@@ -175,11 +198,11 @@ export default function GestorPromocoesPage() {
           </Button>
           <Button 
             variant="secondary" 
-            onClick={() => handleToggleVisibility(value, row.is_visible)}
+            onClick={() => handleOpenModal('toggleVisibility', value, row.is_visible)}
           >
             {row.is_visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </Button>
-          <Button variant="danger" onClick={() => handleDelete(value)}>
+          <Button variant="danger" onClick={() => handleOpenModal('delete', value)}>
             <Trash2 size={16} />
           </Button>
         </div>
@@ -196,6 +219,30 @@ export default function GestorPromocoesPage() {
     return { promotion, product }
   }, [selectedPromotion, promotions, products])
 
+  const getModalConfig = () => {
+    switch (modalState.type) {
+      case 'delete':
+        return {
+          title: 'Excluir Promoção',
+          message: 'Tem certeza que deseja excluir esta promoção?',
+          confirmText: 'Excluir',
+          variant: 'danger' as 'danger',
+        }
+      case 'toggleVisibility':
+        const actionText = modalState.currentValue ? 'ocultar' : 'exibir'
+        return {
+          title: `Alterar Visibilidade`,
+          message: `Tem certeza que deseja ${actionText} esta promoção para as lojas?`,
+          confirmText: modalState.currentValue ? 'Ocultar' : 'Exibir',
+          variant: 'primary' as 'primary',
+        }
+      default:
+        return { title: '', message: '', confirmText: '', variant: 'primary' as 'primary' }
+    }
+  }
+
+  const modalConfig = getModalConfig()
+
   if (loading) {
     return <LoadingSpinner fullScreen text="Carregando promoções..." />
   }
@@ -203,12 +250,7 @@ export default function GestorPromocoesPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Gestor'} 
-          userRole="Gestor" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
@@ -302,14 +344,6 @@ export default function GestorPromocoesPage() {
                 <Card padding="medium">
                   <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
                 </Card>
-
-                {selectedPromotionData && (
-                  <LabelPreview
-                    promotion={selectedPromotionData.promotion}
-                    product={selectedPromotionData.product}
-                    storeName={getStoreName(selectedPromotionData.promotion.store_id)}
-                  />
-                )}
               </div>
             </div>
           </div>
@@ -328,6 +362,27 @@ export default function GestorPromocoesPage() {
         promotions={filteredPromotions}
         getProductById={getProductById}
         getStoreName={getStoreName}
+      />
+
+      {selectedPromotionData && (
+        <LabelPreviewModal
+          isOpen={isLabelModalOpen}
+          onClose={handleCloseLabelModal}
+          promotion={selectedPromotionData.promotion}
+          product={selectedPromotionData.product}
+          storeName={getStoreName(selectedPromotionData.promotion.store_id)}
+        />
+      )}
+
+      <ConfirmModal
+        isOpen={modalState.type !== null}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        variant={modalConfig.variant}
+        loading={isSubmitting}
       />
     </div>
   )

@@ -1,24 +1,33 @@
 'use client'
 
-import { useMemo } from 'react'
-import { AlertTriangle, Package, Tag, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { AlertTriangle, Package, Tag, Trash2, ShoppingCart } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import Card from '@/components/Card/Card'
 import Table from '@/components/Table/Table'
 import Badge from '@/components/Badge/Badge'
 import Button from '@/components/Button/Button'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useProducts'
 import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
 import styles from './page.module.css'
 
+type ModalType = 'sell' | 'delete' | null
+
 export default function LojaAlertasPage() {
-  const { user, logout } = useAuth()
-  const { products, loading, deleteProduct } = useProducts({ 
+  const { user } = useAuth()
+  const { products, loading, deleteProduct, markAsSold } = useProducts({ 
     storeId: user?.storeId || undefined,
     isSold: false 
   })
+
+  const [modalState, setModalState] = useState<{ type: ModalType; productId: string | null }>({
+    type: null,
+    productId: null,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const menuItems = [
     { label: 'Dashboard', href: '/loja/dashboard', icon: 'BarChart3' },
@@ -47,13 +56,25 @@ export default function LojaAlertasPage() {
     alert('Funcionalidade de criar promoção será implementada em breve')
   }
 
-  const handleDiscard = async (productId: string) => {
-    if (confirm('Tem certeza que deseja declarar baixa deste produto?')) {
-      try {
-        await deleteProduct(productId)
-      } catch (error) {
-        alert('Erro ao declarar baixa')
+  const handleModalClose = () => {
+    setModalState({ type: null, productId: null })
+  }
+
+  const handleModalConfirm = async () => {
+    if (!modalState.productId || !modalState.type) return
+
+    setIsSubmitting(true)
+    try {
+      if (modalState.type === 'delete') {
+        await deleteProduct(modalState.productId)
+      } else if (modalState.type === 'sell') {
+        await markAsSold(modalState.productId)
       }
+    } catch (error) {
+      alert(`Erro ao ${modalState.type === 'delete' ? 'declarar baixa' : 'vender'} produto`)
+    } finally {
+      setIsSubmitting(false)
+      handleModalClose()
     }
   }
 
@@ -89,10 +110,13 @@ export default function LojaAlertasPage() {
       label: 'Ações',
       render: (value: string) => (
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => handlePromotion(value)}>
+          <Button variant="primary" onClick={() => setModalState({ type: 'sell', productId: value })}>
+            <ShoppingCart size={16} />
+          </Button>
+          <Button variant="secondary" onClick={() => handlePromotion(value)}>
             <Tag size={16} />
           </Button>
-          <Button variant="danger" onClick={() => handleDiscard(value)}>
+          <Button variant="danger" onClick={() => setModalState({ type: 'delete', productId: value })}>
             <Trash2 size={16} />
           </Button>
         </div>
@@ -107,12 +131,7 @@ export default function LojaAlertasPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Loja'} 
-          userRole="Loja" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
@@ -168,6 +187,25 @@ export default function LojaAlertasPage() {
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={modalState.type !== null}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title={
+          modalState.type === 'sell' 
+            ? 'Confirmar Venda' 
+            : 'Declarar Baixa de Produto'
+        }
+        message={
+          modalState.type === 'sell' 
+            ? 'Confirmar venda deste produto?' 
+            : 'Tem certeza que deseja declarar baixa deste produto?'
+        }
+        confirmText={modalState.type === 'sell' ? 'Confirmar' : 'Declarar Baixa'}
+        variant={modalState.type === 'sell' ? 'primary' : 'danger'}
+        loading={isSubmitting}
+      />
     </div>
   )
 }

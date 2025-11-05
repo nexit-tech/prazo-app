@@ -1,13 +1,15 @@
+'use client'
+
 import { LogOut, User } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import styles from './Header.module.css';
 
-interface HeaderProps {
-  userName: string;
-  userRole: string;
-  onLogout: () => void;
-}
+export default function Header() {
+  const { user, logout } = useAuth();
 
-export default function Header({ userName, userRole, onLogout }: HeaderProps) {
+  const userName = user?.fullName || 'Usuário';
+  const userRole = user?.role === 'gestor' ? 'Gestor' : 'Loja';
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -26,7 +28,7 @@ export default function Header({ userName, userRole, onLogout }: HeaderProps) {
             </div>
           </div>
 
-          <button onClick={onLogout} className={styles.logoutButton}>
+          <button onClick={logout} className={styles.logoutButton}>
             <LogOut size={18} />
           </button>
         </div>

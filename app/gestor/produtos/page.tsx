@@ -6,7 +6,6 @@ import Card from '@/components/Card/Card'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
 import ProductFilters from './components/ProductFilters/ProductFilters'
 import ProductTable from './components/ProductTable/ProductTable'
-import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useProducts'
 import { useStores } from '@/hooks/useStores'
 import { getDaysUntilExpiration, getExpirationCategory } from '@/utils/dateHelpers'
@@ -15,7 +14,6 @@ import styles from './page.module.css'
 type SortOrder = 'asc' | 'desc' | null
 
 export default function GestorProdutosPage() {
-  const { user, logout } = useAuth()
   const { products, loading } = useProducts({ isSold: false })
   const { stores } = useStores()
   
@@ -171,12 +169,7 @@ export default function GestorProdutosPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Gestor'} 
-          userRole="Gestor" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>

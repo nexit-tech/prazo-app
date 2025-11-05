@@ -7,17 +7,23 @@ import Button from '@/components/Button/Button'
 import styles from './page.module.css'
 
 export default function LoginPage() {
-  const { login, loading, error } = useAuth()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoggingIn(true)
+    setLocalError(null)
     
     try {
       await login({ email, password })
     } catch (err) {
-      console.error('Login failed:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login'
+      setLocalError(errorMessage)
+      setIsLoggingIn(false)
     }
   }
 
@@ -59,7 +65,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className={styles.input}
-                    disabled={loading}
+                    disabled={isLoggingIn}
                   />
                 </div>
               </div>
@@ -75,15 +81,15 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className={styles.input}
-                    disabled={loading}
+                    disabled={isLoggingIn}
                   />
                 </div>
               </div>
 
-              {error && <p className={styles.error}>{error}</p>}
+              {localError && <p className={styles.error}>{localError}</p>}
 
-              <Button type="submit" variant="primary" fullWidth disabled={loading}>
-                {loading ? 'Entrando...' : 'Entrar'}
+              <Button type="submit" variant="primary" fullWidth disabled={isLoggingIn}>
+                {isLoggingIn ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
 

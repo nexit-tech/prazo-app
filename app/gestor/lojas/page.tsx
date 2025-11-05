@@ -10,17 +10,18 @@ import Button from '@/components/Button/Button'
 import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'
 import CreateStoreModal from './components/CreateStoreModal/CreateStoreModal'
 import ViewStoreModal from './components/ViewStoreModal/ViewStoreModal'
 import EditStoreModal from './components/EditStoreModal/EditStoreModal'
 import DeleteStoreModal from './components/DeleteStoreModal/DeleteStoreModal'
-import { useAuth } from '@/hooks/useAuth'
 import { useStores } from '@/hooks/useStores'
 import { formatDate } from '@/utils/dateHelpers'
 import styles from './page.module.css'
 
+type ModalType = 'toggleStatus' | null
+
 export default function GestorLojasPage() {
-  const { user, logout } = useAuth()
   const { stores, loading, toggleActive, refresh } = useStores()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -28,8 +29,15 @@ export default function GestorLojasPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null)
-  const [selectedStore, setSelectedStore] = useState<{ id: string; name: string; code: string } | null>(null)
+  
+  const [selectedStore, setSelectedStore] = useState<{ id: string; name: string; code: string; isActive: boolean } | null>(null)
+  
+  const [modalState, setModalState] = useState<{ type: ModalType; storeId: string | null; currentStatus: boolean }>({
+    type: null,
+    storeId: null,
+    currentStatus: false,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -57,27 +65,39 @@ export default function GestorLojasPage() {
   }, [stores, searchTerm, statusFilter])
 
   const handleViewDetails = (storeId: string) => {
-    setSelectedStoreId(storeId)
+    setSelectedStore({ id: storeId, name: '', code: '', isActive: false }) 
     setIsViewModalOpen(true)
   }
 
   const handleEdit = (storeId: string) => {
-    setSelectedStoreId(storeId)
+    setSelectedStore({ id: storeId, name: '', code: '', isActive: false })
     setIsEditModalOpen(true)
   }
 
   const handleDeleteClick = (store: { id: string; name: string; code: string }) => {
-    setSelectedStore(store)
+    setSelectedStore({ ...store, isActive: false }) 
     setIsDeleteModalOpen(true)
   }
 
-  const handleToggleStatus = async (storeId: string, currentStatus: boolean) => {
-    if (confirm(`Deseja realmente ${currentStatus ? 'desativar' : 'ativar'} esta loja?`)) {
-      try {
-        await toggleActive(storeId, !currentStatus)
-      } catch (error) {
-        alert('Erro ao alterar status da loja')
-      }
+  const handleOpenToggleModal = (storeId: string, currentStatus: boolean) => {
+    setModalState({ type: 'toggleStatus', storeId, currentStatus })
+  }
+
+  const handleModalClose = () => {
+    setModalState({ type: null, storeId: null, currentStatus: false })
+  }
+
+  const handleModalConfirm = async () => {
+    if (!modalState.storeId || modalState.type !== 'toggleStatus') return
+
+    setIsSubmitting(true)
+    try {
+      await toggleActive(modalState.storeId, !modalState.currentStatus)
+    } catch (error) {
+      alert('Erro ao alterar status da loja')
+    } finally {
+      setIsSubmitting(false)
+      handleModalClose()
     }
   }
 
@@ -126,7 +146,7 @@ export default function GestorLojasPage() {
           </Button>
           <Button 
             variant={row.is_active ? 'danger' : 'primary'} 
-            onClick={() => handleToggleStatus(value, row.is_active)}
+            onClick={() => handleOpenToggleModal(value, row.is_active)}
           >
             <Power size={16} />
           </Button>
@@ -142,12 +162,7 @@ export default function GestorLojasPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Gestor'} 
-          userRole="Gestor" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
@@ -220,24 +235,24 @@ export default function GestorLojasPage() {
         onSuccess={handleSuccess}
       />
 
-      {selectedStoreId && (
+      {selectedStore?.id && (
         <>
           <ViewStoreModal
             isOpen={isViewModalOpen}
             onClose={() => {
               setIsViewModalOpen(false)
-              setSelectedStoreId(null)
+              setSelectedStore(null)
             }}
-            storeId={selectedStoreId}
+            storeId={selectedStore.id}
           />
 
           <EditStoreModal
             isOpen={isEditModalOpen}
             onClose={() => {
               setIsEditModalOpen(false)
-              setSelectedStoreId(null)
+              setSelectedStore(null)
             }}
-            storeId={selectedStoreId}
+            storeId={selectedStore.id}
             onSuccess={handleSuccess}
           />
         </>
@@ -249,8 +264,19 @@ export default function GestorLojasPage() {
           setIsDeleteModalOpen(false)
           setSelectedStore(null)
         }}
-        store={selectedStore}
+        store={selectedStore ? { id: selectedStore.id, name: selectedStore.name, code: selectedStore.code } : null}
         onSuccess={handleSuccess}
+      />
+
+      <ConfirmModal
+        isOpen={modalState.type === 'toggleStatus'}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title={modalState.currentStatus ? 'Desativar Loja' : 'Ativar Loja'}
+        message={`Deseja realmente ${modalState.currentStatus ? 'desativar' : 'ativar'} esta loja?`}
+        confirmText={modalState.currentStatus ? 'Desativar' : 'Ativar'}
+        variant={modalState.currentStatus ? 'danger' : 'primary'}
+        loading={isSubmitting}
       />
     </div>
   )

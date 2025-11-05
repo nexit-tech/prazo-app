@@ -6,7 +6,6 @@ import Sidebar from '@/components/Sidebar/Sidebar'
 import StatCard from './components/StatCard/StatCard'
 import CategoryCard from './components/CategoryCard/CategoryCard'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
-import { useAuth } from '@/hooks/useAuth'
 import { useStores } from '@/hooks/useStores'
 import { useProducts } from '@/hooks/useProducts'
 import { usePromotions } from '@/hooks/usePromotions'
@@ -14,7 +13,6 @@ import { getExpirationCategory } from '@/utils/dateHelpers'
 import styles from './page.module.css'
 
 export default function GestorDashboard() {
-  const { user, logout } = useAuth()
   const { stores } = useStores({ isActive: true })
   const { products, loading: productsLoading } = useProducts({ isSold: false })
   const { products: soldProducts } = useProducts({ isSold: true })
@@ -74,12 +72,7 @@ export default function GestorDashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Gestor'} 
-          userRole="Gestor" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>

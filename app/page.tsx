@@ -10,22 +10,19 @@ export default function Home() {
   const { user, loading } = useAuth()
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        if (user.role === 'gestor') {
-          router.push('/gestor/dashboard')
-        } else {
-          router.push('/loja/dashboard')
-        }
-      } else {
-        router.push('/login')
-      }
+    if (loading) {
+      return
+    }
+
+    if (user) {
+      const targetPath = user.role === 'gestor' 
+        ? '/gestor/dashboard' 
+        : '/loja/dashboard'
+      router.push(targetPath)
+    } else {
+      router.push('/login')
     }
   }, [user, loading, router])
 
-  if (loading) {
-    return <LoadingSpinner fullScreen text="Carregando..." />
-  }
-
-  return null
+  return <LoadingSpinner fullScreen text="Carregando..." />
 }

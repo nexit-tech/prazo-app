@@ -17,13 +17,6 @@ import styles from './page.module.css';
 type TransferStatus = 'pending' | 'approved' | 'rejected';
 
 export default function GestorTransferenciasPage() {
-  const router = useRouter();
-  const [userName] = useState('Carlos Silva');
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
-
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
     { label: 'Lojas', href: '/gestor/lojas', icon: 'Store' },
@@ -117,7 +110,7 @@ export default function GestorTransferenciasPage() {
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
-            <Header userName={userName} userRole="Gestor" onLogout={handleLogout} />
+            <Header />
             
             <div className={styles.content}>
               <div className={styles.header}>

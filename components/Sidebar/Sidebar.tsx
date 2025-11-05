@@ -15,6 +15,7 @@ import {
   LogOut,
   LucideIcon
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import styles from './Sidebar.module.css';
 
 interface MenuItem {
@@ -25,9 +26,6 @@ interface MenuItem {
 
 interface SidebarProps {
   menuItems: MenuItem[];
-  userName: string;
-  userRole: string;
-  onLogout: () => void;
 }
 
 const iconMap: Record<string, LucideIcon> = {
@@ -41,8 +39,12 @@ const iconMap: Record<string, LucideIcon> = {
   AlertTriangle,
 };
 
-export default function Sidebar({ menuItems, userName, userRole, onLogout }: SidebarProps) {
+export default function Sidebar({ menuItems }: SidebarProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  const userName = user?.fullName || 'Usuário';
+  const userRole = user?.role === 'gestor' ? 'Gestor' : 'Loja';
 
   return (
     <aside className={styles.sidebar}>
@@ -80,7 +82,7 @@ export default function Sidebar({ menuItems, userName, userRole, onLogout }: Sid
             <p className={styles.userRole}>{userRole}</p>
           </div>
         </div>
-        <button onClick={onLogout} className={styles.logoutButton}>
+        <button onClick={logout} className={styles.logoutButton}>
           <LogOut size={18} />
         </button>
       </div>

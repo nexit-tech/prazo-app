@@ -14,7 +14,7 @@ import styles from './page.module.css'
 
 export default function LojaCadastrarPage() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { createProduct } = useProducts()
   const [loading, setLoading] = useState(false)
 
@@ -95,12 +95,7 @@ export default function LojaCadastrarPage() {
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        <Sidebar 
-          menuItems={menuItems} 
-          userName={user?.fullName || 'Loja'} 
-          userRole="Loja" 
-          onLogout={logout} 
-        />
+        <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
           <div className={styles.mainCard}>
