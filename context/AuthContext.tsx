@@ -9,7 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isGestor: boolean
   isLoja: boolean
-  login: (credentials: LoginCredentials) => Promise<AuthUser>
+  login: (credentials: LoginCredentials, keepLoggedIn: boolean) => Promise<AuthUser>
   logout: () => Promise<void>
 }
 

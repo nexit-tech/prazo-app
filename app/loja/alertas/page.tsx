@@ -134,56 +134,54 @@ export default function LojaAlertasPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>Alertas</h1>
-                <p className={styles.subtitle}>Produtos que necessitam atenção</p>
-              </div>
-
-              <div className={styles.grid}>
-                <div className={`${styles.alertCard} ${styles.declarar}`}>
-                  <div className={styles.alertIcon}>
-                    <AlertTriangle size={24} />
-                  </div>
-                  <div className={styles.alertContent}>
-                    <p className={styles.alertLabel}>Declarar Baixa</p>
-                    <h3 className={styles.alertValue}>{stats.declarar}</h3>
-                    <span className={styles.alertDescription}>1-15 dias</span>
-                  </div>
-                </div>
-
-                <div className={`${styles.alertCard} ${styles.emergencia}`}>
-                  <div className={styles.alertIcon}>
-                    <AlertTriangle size={24} />
-                  </div>
-                  <div className={styles.alertContent}>
-                    <p className={styles.alertLabel}>Emergência</p>
-                    <h3 className={styles.alertValue}>{stats.emergencia}</h3>
-                    <span className={styles.alertDescription}>16-29 dias</span>
-                  </div>
-                </div>
-
-                <div className={`${styles.alertCard} ${styles.urgente}`}>
-                  <div className={styles.alertIcon}>
-                    <AlertTriangle size={24} />
-                  </div>
-                  <div className={styles.alertContent}>
-                    <p className={styles.alertLabel}>Urgente</p>
-                    <h3 className={styles.alertValue}>{stats.urgente}</h3>
-                    <span className={styles.alertDescription}>30-59 dias</span>
-                  </div>
-                </div>
-              </div>
-
-              <Card padding="medium">
-                <Table 
-                  columns={columns} 
-                  data={criticalProducts} 
-                  emptyMessage="Nenhum produto em alerta" 
-                />
-              </Card>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Alertas</h1>
+              <p className={styles.subtitle}>Produtos que necessitam atenção</p>
             </div>
+
+            <div className={styles.grid}>
+              <div className={`${styles.alertCard} ${styles.declarar}`}>
+                <div className={styles.alertIcon}>
+                  <AlertTriangle size={24} />
+                </div>
+                <div className={styles.alertContent}>
+                  <p className={styles.alertLabel}>Declarar Baixa</p>
+                  <h3 className={styles.alertValue}>{stats.declarar}</h3>
+                  <span className={styles.alertDescription}>1-15 dias</span>
+                </div>
+              </div>
+
+              <div className={`${styles.alertCard} ${styles.emergencia}`}>
+                <div className={styles.alertIcon}>
+                  <AlertTriangle size={24} />
+                </div>
+                <div className={styles.alertContent}>
+                  <p className={styles.alertLabel}>Emergência</p>
+                  <h3 className={styles.alertValue}>{stats.emergencia}</h3>
+                  <span className={styles.alertDescription}>16-29 dias</span>
+                </div>
+              </div>
+
+              <div className={`${styles.alertCard} ${styles.urgente}`}>
+                <div className={styles.alertIcon}>
+                  <AlertTriangle size={24} />
+                </div>
+                <div className={styles.alertContent}>
+                  <p className={styles.alertLabel}>Urgente</p>
+                  <h3 className={styles.alertValue}>{stats.urgente}</h3>
+                  <span className={styles.alertDescription}>30-59 dias</span>
+                </div>
+              </div>
+            </div>
+
+            <Card padding="medium">
+              <Table 
+                columns={columns} 
+                data={criticalProducts} 
+                emptyMessage="Nenhum produto em alerta" 
+              />
+            </Card>
           </div>
         </main>
       </div>

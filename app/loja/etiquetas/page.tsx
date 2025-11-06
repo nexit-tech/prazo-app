@@ -132,62 +132,60 @@ export default function LojaEtiquetasPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <div>
-                  <h1 className={styles.title}>Etiquetas</h1>
-                  <p className={styles.subtitle}>Baixe e imprima etiquetas de promoção</p>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <div>
+                <h1 className={styles.title}>Etiquetas</h1>
+                <p className={styles.subtitle}>Baixe e imprima etiquetas de promoção</p>
+              </div>
+              <div className={styles.headerActions}>
+                <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
+                  <Download size={18} />
+                  Gerar em Lote
+                </Button>
+              </div>
+            </div>
+
+            <div className={styles.grid}>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Tag size={24} />
                 </div>
-                <div className={styles.headerActions}>
-                  <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
-                    <Download size={18} />
-                    Gerar em Lote
-                  </Button>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Total de Etiquetas</p>
+                  <h2 className={styles.statValue}>{stats.totalLabels}</h2>
                 </div>
               </div>
 
-              <div className={styles.grid}>
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Tag size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Total de Etiquetas</p>
-                    <h2 className={styles.statValue}>{stats.totalLabels}</h2>
-                  </div>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Eye size={24} />
                 </div>
-
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Eye size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Etiquetas Ativas</p>
-                    <h2 className={styles.statValue}>{stats.activeLabels}</h2>
-                  </div>
-                </div>
-
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Download size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Desconto Médio</p>
-                    <h2 className={styles.statValue}>{stats.averageDiscount}%</h2>
-                  </div>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Etiquetas Ativas</p>
+                  <h2 className={styles.statValue}>{stats.activeLabels}</h2>
                 </div>
               </div>
 
-              <div className={styles.tableSection}>
-                <Card padding="medium">
-                  <Table 
-                    columns={columns} 
-                    data={promotions} 
-                    emptyMessage="Nenhuma etiqueta disponível" 
-                  />
-                </Card>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Download size={24} />
+                </div>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Desconto Médio</p>
+                  <h2 className={styles.statValue}>{stats.averageDiscount}%</h2>
+                </div>
               </div>
+            </div>
+
+            <div className={styles.tableSection}>
+              <Card padding="medium">
+                <Table 
+                  columns={columns} 
+                  data={promotions} 
+                  emptyMessage="Nenhuma etiqueta disponível" 
+                />
+              </Card>
             </div>
           </div>
         </main>

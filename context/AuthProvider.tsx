@@ -10,13 +10,21 @@ interface AuthProviderProps {
   children: React.ReactNode
 }
 
+const KEEP_LOGGED_IN_KEY = 'prazo-keep-logged-in'
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    checkUser()
+    const keepLoggedIn = localStorage.getItem(KEEP_LOGGED_IN_KEY)
+
+    if (keepLoggedIn === 'true') {
+      checkUser()
+    } else {
+      setLoading(false)
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -24,6 +32,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           checkUser()
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
+          localStorage.removeItem(KEEP_LOGGED_IN_KEY)
         }
       }
     )
@@ -35,18 +44,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const currentUser = await authService.getCurrentUser()
       setUser(currentUser)
+      if (!currentUser) {
+        localStorage.removeItem(KEEP_LOGGED_IN_KEY)
+      }
     } catch (err) {
       setUser(null)
+      localStorage.removeItem(KEEP_LOGGED_IN_KEY)
     } finally {
       setLoading(false)
     }
   }
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials: LoginCredentials, keepLoggedIn: boolean) => {
     try {
       setLoading(true)
       const userData = await authService.login(credentials)
       setUser(userData)
+      
+      if (keepLoggedIn) {
+        localStorage.setItem(KEEP_LOGGED_IN_KEY, 'true')
+      } else {
+        localStorage.removeItem(KEEP_LOGGED_IN_KEY)
+      }
       
       const targetPath = userData.role === 'gestor' 
         ? '/gestor/dashboard' 
@@ -56,6 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return userData
     } catch (err) {
       setUser(null)
+      localStorage.removeItem(KEEP_LOGGED_IN_KEY)
       throw err
     } finally {
       setLoading(false)
@@ -67,6 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true)
       await authService.logout()
       setUser(null)
+      localStorage.removeItem(KEEP_LOGGED_IN_KEY)
       router.push('/login')
     } catch (err) {
       console.error(err)

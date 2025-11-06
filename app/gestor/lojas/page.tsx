@@ -165,66 +165,64 @@ export default function GestorLojasPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <div className={styles.headerText}>
-                  <h1 className={styles.title}>Lojas</h1>
-                  <p className={styles.subtitle}>Gerencie todas as filiais</p>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <div className={styles.headerText}>
+                <h1 className={styles.title}>Lojas</h1>
+                <p className={styles.subtitle}>Gerencie todas as filiais</p>
+              </div>
+              <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                <Plus size={18} />
+                Nova Loja
+              </Button>
+            </div>
+
+            <div className={styles.statsGrid}>
+              <Card padding="medium">
+                <div>
+                  <p className={styles.statLabel}>Total de Lojas</p>
+                  <h3 className={styles.statValue}>{stores.length}</h3>
                 </div>
-                <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
-                  <Plus size={18} />
-                  Nova Loja
-                </Button>
-              </div>
-
-              <div className={styles.statsGrid}>
-                <Card padding="medium">
-                  <div>
-                    <p className={styles.statLabel}>Total de Lojas</p>
-                    <h3 className={styles.statValue}>{stores.length}</h3>
-                  </div>
-                </Card>
-
-                <Card padding="medium">
-                  <div>
-                    <p className={styles.statLabel}>Lojas Ativas</p>
-                    <h3 className={styles.statValue}>{activeStores}</h3>
-                  </div>
-                </Card>
-
-                <Card padding="medium">
-                  <div>
-                    <p className={styles.statLabel}>Lojas Inativas</p>
-                    <h3 className={styles.statValue}>{inactiveStores}</h3>
-                  </div>
-                </Card>
-              </div>
-
-              <div className={styles.filters}>
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Buscar por nome, código, email..."
-                  fullWidth
-                />
-                <div className={styles.filterRow}>
-                  <Select
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={statusOptions}
-                    placeholder="Filtrar por status"
-                  />
-                  <div className={styles.resultCount}>
-                    {filteredStores.length} loja{filteredStores.length !== 1 ? 's' : ''} encontrada{filteredStores.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
+              </Card>
 
               <Card padding="medium">
-                <Table columns={columns} data={filteredStores} emptyMessage="Nenhuma loja encontrada" />
+                <div>
+                  <p className={styles.statLabel}>Lojas Ativas</p>
+                  <h3 className={styles.statValue}>{activeStores}</h3>
+                </div>
+              </Card>
+
+              <Card padding="medium">
+                <div>
+                  <p className={styles.statLabel}>Lojas Inativas</p>
+                  <h3 className={styles.statValue}>{inactiveStores}</h3>
+                </div>
               </Card>
             </div>
+
+            <div className={styles.filters}>
+              <SearchBar
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por nome, código, email..."
+                fullWidth
+              />
+              <div className={styles.filterRow}>
+                <Select
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={statusOptions}
+                  placeholder="Filtrar por status"
+                />
+                <div className={styles.resultCount}>
+                  {filteredStores.length} loja{filteredStores.length !== 1 ? 's' : ''} encontrada{filteredStores.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+
+            <Card padding="medium">
+              <Table columns={columns} data={filteredStores} emptyMessage="Nenhuma loja encontrada" />
+            </Card>
           </div>
         </main>
       </div>

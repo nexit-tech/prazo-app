@@ -13,14 +13,6 @@
   padding: var(--spacing-xl);
 }
 
-.mainCard {
-  background: var(--color-white);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-soft);
-  padding: var(--spacing-2xl);
-  min-height: calc(100vh - 3rem);
-}
-
 .content {
   width: 100%;
   max-width: 900px;

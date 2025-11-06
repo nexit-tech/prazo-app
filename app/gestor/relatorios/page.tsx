@@ -96,59 +96,57 @@ export default function GestorRelatoriosPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <div className={styles.headerIcon}>
-                  <TrendingUp size={32} />
-                </div>
-                <div>
-                  <h1 className={styles.title}>Relatórios e Análises</h1>
-                  <p className={styles.subtitle}>Visualize métricas e tendências em tempo real</p>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <div className={styles.headerIcon}>
+                <TrendingUp size={32} />
+              </div>
+              <div>
+                <h1 className={styles.title}>Relatórios e Análises</h1>
+                <p className={styles.subtitle}>Visualize métricas e tendências em tempo real</p>
+              </div>
+            </div>
+
+            <div className={styles.layoutGrid}>
+              <div className={styles.mainContent}>
+                {metrics.length > 0 && (
+                  <div className={styles.metricsGrid}>
+                    {metrics.map((metric, index) => (
+                      <MetricsCard key={index} metric={metric} />
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.chartsGrid}>
+                  {expirationData.length > 0 && (
+                    <ExpirationChart data={expirationData} />
+                  )}
+                  {salesData.length > 0 && (
+                    <SalesChart data={salesData} />
+                  )}
+                  {categoryData.length > 0 && (
+                    <CategoryChart data={categoryData} />
+                  )}
+                  
+                  {expirationData.length === 0 && salesData.length === 0 && categoryData.length === 0 && (
+                    <div className={styles.emptyState}>
+                      <p>Nenhum dado disponível para o período selecionado</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className={styles.layoutGrid}>
-                <div className={styles.mainContent}>
-                  {metrics.length > 0 && (
-                    <div className={styles.metricsGrid}>
-                      {metrics.map((metric, index) => (
-                        <MetricsCard key={index} metric={metric} />
-                      ))}
-                    </div>
-                  )}
-
-                  <div className={styles.chartsGrid}>
-                    {expirationData.length > 0 && (
-                      <ExpirationChart data={expirationData} />
-                    )}
-                    {salesData.length > 0 && (
-                      <SalesChart data={salesData} />
-                    )}
-                    {categoryData.length > 0 && (
-                      <CategoryChart data={categoryData} />
-                    )}
-                    
-                    {expirationData.length === 0 && salesData.length === 0 && categoryData.length === 0 && (
-                      <div className={styles.emptyState}>
-                        <p>Nenhum dado disponível para o período selecionado</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.sidebar}>
-                  <ReportFilters
-                    storeFilter={storeFilter}
-                    onStoreChange={setStoreFilter}
-                    startDate={startDate}
-                    onStartDateChange={setStartDate}
-                    endDate={endDate}
-                    onEndDateChange={setEndDate}
-                    onApplyFilters={handleApplyFilters}
-                    storeOptions={storeOptions}
-                  />
-                </div>
+              <div className={styles.sidebar}>
+                <ReportFilters
+                  storeFilter={storeFilter}
+                  onStoreChange={setStoreFilter}
+                  startDate={startDate}
+                  onStartDateChange={setStartDate}
+                  endDate={endDate}
+                  onEndDateChange={setEndDate}
+                  onApplyFilters={handleApplyFilters}
+                  storeOptions={storeOptions}
+                />
               </div>
             </div>
           </div>

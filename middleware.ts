@@ -56,15 +56,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  console.log('🔒 Middleware - Path:', request.nextUrl.pathname)
-  console.log('👤 Middleware - User:', user?.email)
-
   const isAuthPage = request.nextUrl.pathname === '/login'
   const isGestorRoute = request.nextUrl.pathname.startsWith('/gestor')
   const isLojaRoute = request.nextUrl.pathname.startsWith('/loja')
 
   if (!user && (isGestorRoute || isLojaRoute)) {
-    console.log('⛔ Redirecionando para login - sem usuário')
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
@@ -75,13 +71,9 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    console.log('✅ Usuário logado - Role:', metadata?.role)
-
     if (metadata?.role === 'gestor') {
-      console.log('🔀 Redirecionando para /gestor/dashboard')
       return NextResponse.redirect(new URL('/gestor/dashboard', request.url))
     } else {
-      console.log('🔀 Redirecionando para /loja/dashboard')
       return NextResponse.redirect(new URL('/loja/dashboard', request.url))
     }
   }
@@ -94,7 +86,6 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (metadata?.role !== 'gestor') {
-      console.log('⛔ Acesso negado - não é gestor')
       return NextResponse.redirect(new URL('/loja/dashboard', request.url))
     }
   }
@@ -107,7 +98,6 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (metadata?.role !== 'loja') {
-      console.log('⛔ Acesso negado - não é loja')
       return NextResponse.redirect(new URL('/gestor/dashboard', request.url))
     }
   }

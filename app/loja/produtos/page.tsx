@@ -10,17 +10,20 @@ import SearchBar from '@/components/SearchBar/SearchBar'
 import Select from '@/components/Select/Select'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'
+import EditProductModal from './components/EditProductModal/EditProductModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useProducts'
 import { formatDaysRemaining, getExpirationCategory, getExpirationLabel, getExpirationBadgeVariant } from '@/utils/dateHelpers'
+import { Database } from '@/lib/supabase/types'
 import styles from './page.module.css'
 
+type Product = Database['public']['Tables']['products']['Row']
 type SortOrder = 'asc' | 'desc' | null
 type ModalType = 'sell' | 'delete' | null
 
 export default function LojaProdutosPage() {
   const { user } = useAuth()
-  const { products, loading, deleteProduct, markAsSold } = useProducts({ 
+  const { products, loading, deleteProduct, markAsSold, refresh } = useProducts({ 
     storeId: user?.storeId || undefined,
     isSold: false 
   })
@@ -35,6 +38,8 @@ export default function LojaProdutosPage() {
     type: null,
     productId: null,
   })
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const menuItems = [
@@ -110,7 +115,21 @@ export default function LojaProdutosPage() {
   }, [products, searchTerm, statusFilter, categoryFilter, sortColumn, sortOrder])
 
   const handleEdit = (productId: string) => {
-    alert('Funcionalidade de edição será implementada em breve')
+    const productToEdit = products.find(p => p.id === productId)
+    if (productToEdit) {
+      setSelectedProduct(productToEdit)
+      setIsEditModalOpen(true)
+    }
+  }
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const handleEditSuccess = () => {
+    handleCloseEditModal()
+    refresh()
   }
 
   const handleModalClose = () => {
@@ -163,144 +182,142 @@ export default function LojaProdutosPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <div>
-                  <h1 className={styles.title}>Meus Produtos</h1>
-                  <p className={styles.subtitle}>Gerencie o estoque da sua loja</p>
-                </div>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <div>
+                <h1 className={styles.title}>Meus Produtos</h1>
+                <p className={styles.subtitle}>Gerencie o estoque da sua loja</p>
               </div>
-
-              <div className={styles.filters}>
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Buscar por nome, marca, código..."
-                  fullWidth
-                />
-                <div className={styles.filterRow}>
-                  <Select
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={statusOptions}
-                    placeholder="Filtrar por status"
-                  />
-                  <Select
-                    value={categoryFilter}
-                    onChange={setCategoryFilter}
-                    options={categoryOptions}
-                    placeholder="Filtrar por categoria"
-                  />
-                  <div className={styles.resultCount}>
-                    {filteredAndSortedProducts.length} produto{filteredAndSortedProducts.length !== 1 ? 's' : ''} encontrado{filteredAndSortedProducts.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-              </div>
-
-              <Card padding="medium">
-                <div className={styles.tableWrapper}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th>
-                          <button 
-                            className={`${styles.sortButton} ${sortColumn === 'name' ? styles.active : ''}`}
-                            onClick={() => handleSort('name')}
-                          >
-                            Produto {getSortIcon('name')}
-                          </button>
-                        </th>
-                        <th>Código de Barras</th>
-                        <th>Código Interno</th>
-                        <th>
-                          <button 
-                            className={`${styles.sortButton} ${sortColumn === 'brand' ? styles.active : ''}`}
-                            onClick={() => handleSort('brand')}
-                          >
-                            Marca {getSortIcon('brand')}
-                          </button>
-                        </th>
-                        <th>
-                          <button 
-                            className={`${styles.sortButton} ${sortColumn === 'quantity' ? styles.active : ''}`}
-                            onClick={() => handleSort('quantity')}
-                          >
-                            Qtd {getSortIcon('quantity')}
-                          </button>
-                        </th>
-                        <th>
-                          <button 
-                            className={`${styles.sortButton} ${sortColumn === 'current_price' ? styles.active : ''}`}
-                            onClick={() => handleSort('current_price')}
-                          >
-                            Preço Atual {getSortIcon('current_price')}
-                          </button>
-                        </th>
-                        <th>
-                          <button 
-                            className={`${styles.sortButton} ${sortColumn === 'expiration_date' ? styles.active : ''}`}
-                            onClick={() => handleSort('expiration_date')}
-                          >
-                            Validade {getSortIcon('expiration_date')}
-                          </button>
-                        </th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAndSortedProducts.length > 0 ? (
-                        filteredAndSortedProducts.map((product) => {
-                          const category = getExpirationCategory(product.expiration_date)
-                          const statusLabel = getExpirationLabel(category)
-                          const variant = getExpirationBadgeVariant(category)
-                          
-                          return (
-                            <tr key={product.id}>
-                              <td>{product.name}</td>
-                              <td>{product.barcode}</td>
-                              <td>{product.internal_code}</td>
-                              <td>{product.brand}</td>
-                              <td>{product.quantity}</td>
-                              <td>
-                                {new Intl.NumberFormat('pt-BR', {
-                                  style: 'currency',
-                                  currency: 'BRL',
-                                }).format(product.current_price)}
-                              </td>
-                              <td>{formatDaysRemaining(product.expiration_date)}</td>
-                              <td>
-                                <Badge variant={variant}>{statusLabel}</Badge>
-                              </td>
-                              <td>
-                                <div className={styles.actions}>
-                                  <Button variant="primary" onClick={() => setModalState({ type: 'sell', productId: product.id })}>
-                                    <ShoppingCart size={16} />
-                                  </Button>
-                                  <Button variant="secondary" onClick={() => handleEdit(product.id)}>
-                                    <Edit2 size={16} />
-                                  </Button>
-                                  <Button variant="danger" onClick={() => setModalState({ type: 'delete', productId: product.id })}>
-                                    <Trash2 size={16} />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          )
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan={9} className={styles.emptyMessage}>
-                            Nenhum produto encontrado
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
             </div>
+
+            <div className={styles.filters}>
+              <SearchBar
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por nome, marca, código..."
+                fullWidth
+              />
+              <div className={styles.filterRow}>
+                <Select
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={statusOptions}
+                  placeholder="Filtrar por status"
+                />
+                <Select
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                  options={categoryOptions}
+                  placeholder="Filtrar por categoria"
+                />
+                <div className={styles.resultCount}>
+                  {filteredAndSortedProducts.length} produto{filteredAndSortedProducts.length !== 1 ? 's' : ''} encontrado{filteredAndSortedProducts.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+
+            <Card padding="medium">
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>
+                        <button 
+                          className={`${styles.sortButton} ${sortColumn === 'name' ? styles.active : ''}`}
+                          onClick={() => handleSort('name')}
+                        >
+                          Produto {getSortIcon('name')}
+                        </button>
+                      </th>
+                      <th>Código de Barras</th>
+                      <th>Código Interno</th>
+                      <th>
+                        <button 
+                          className={`${styles.sortButton} ${sortColumn === 'brand' ? styles.active : ''}`}
+                          onClick={() => handleSort('brand')}
+                        >
+                          Marca {getSortIcon('brand')}
+                        </button>
+                      </th>
+                      <th>
+                        <button 
+                          className={`${styles.sortButton} ${sortColumn === 'quantity' ? styles.active : ''}`}
+                          onClick={() => handleSort('quantity')}
+                        >
+                          Qtd {getSortIcon('quantity')}
+                        </button>
+                      </th>
+                      <th>
+                        <button 
+                          className={`${styles.sortButton} ${sortColumn === 'current_price' ? styles.active : ''}`}
+                          onClick={() => handleSort('current_price')}
+                        >
+                          Preço Atual {getSortIcon('current_price')}
+                        </button>
+                      </th>
+                      <th>
+                        <button 
+                          className={`${styles.sortButton} ${sortColumn === 'expiration_date' ? styles.active : ''}`}
+                          onClick={() => handleSort('expiration_date')}
+                        >
+                          Validade {getSortIcon('expiration_date')}
+                        </button>
+                      </th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAndSortedProducts.length > 0 ? (
+                      filteredAndSortedProducts.map((product) => {
+                        const category = getExpirationCategory(product.expiration_date)
+                        const statusLabel = getExpirationLabel(category)
+                        const variant = getExpirationBadgeVariant(category)
+                        
+                        return (
+                          <tr key={product.id}>
+                            <td>{product.name}</td>
+                            <td>{product.barcode}</td>
+                            <td>{product.internal_code}</td>
+                            <td>{product.brand}</td>
+                            <td>{product.quantity}</td>
+                            <td>
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              }).format(product.current_price)}
+                            </td>
+                            <td>{formatDaysRemaining(product.expiration_date)}</td>
+                            <td>
+                              <Badge variant={variant}>{statusLabel}</Badge>
+                            </td>
+                            <td>
+                              <div className={styles.actions}>
+                                <Button variant="primary" onClick={() => setModalState({ type: 'sell', productId: product.id })}>
+                                  <ShoppingCart size={16} />
+                                </Button>
+                                <Button variant="secondary" onClick={() => handleEdit(product.id)}>
+                                  <Edit2 size={16} />
+                                </Button>
+                                <Button variant="danger" onClick={() => setModalState({ type: 'delete', productId: product.id })}>
+                                  <Trash2 size={16} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={9} className={styles.emptyMessage}>
+                          Nenhum produto encontrado
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </div>
         </main>
       </div>
@@ -318,6 +335,13 @@ export default function LojaProdutosPage() {
         confirmText={modalState.type === 'sell' ? 'Confirmar' : 'Excluir'}
         variant={modalState.type === 'sell' ? 'primary' : 'danger'}
         loading={isSubmitting}
+      />
+
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        product={selectedProduct}
+        onSuccess={handleEditSuccess}
       />
     </div>
   )

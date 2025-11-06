@@ -13,16 +13,6 @@
   padding: var(--spacing-xl);
 }
 
-.mainCard {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: var(--spacing-xl);
-  min-height: calc(100vh - 3rem);
-}
-
 .content {
   margin-top: var(--spacing-2xl);
 }

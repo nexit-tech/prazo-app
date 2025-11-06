@@ -14,14 +14,6 @@
   overflow-x: hidden;
 }
 
-.mainCard {
-  background: var(--color-white);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-soft);
-  padding: var(--spacing-2xl);
-  min-height: calc(100vh - 3rem);
-}
-
 .content {
   width: 100%;
 }
@@ -178,18 +170,16 @@
   padding: 0.625rem 1rem;
 }
 
-/* Larguras específicas das colunas para melhor layout */
-.table th:nth-child(1) { min-width: 180px; } /* Produto */
-.table th:nth-child(2) { min-width: 140px; } /* Código de Barras */
-.table th:nth-child(3) { min-width: 120px; } /* Código Interno */
-.table th:nth-child(4) { min-width: 120px; } /* Marca */
-.table th:nth-child(5) { min-width: 60px; } /* Qtd */
-.table th:nth-child(6) { min-width: 100px; } /* Preço */
-.table th:nth-child(7) { min-width: 100px; } /* Validade */
-.table th:nth-child(8) { min-width: 120px; } /* Status */
-.table th:nth-child(9) { min-width: 300px; } /* Ações */
+.table th:nth-child(1) { min-width: 180px; } 
+.table th:nth-child(2) { min-width: 140px; } 
+.table th:nth-child(3) { min-width: 120px; } 
+.table th:nth-child(4) { min-width: 120px; } 
+.table th:nth-child(5) { min-width: 60px; } 
+.table th:nth-child(6) { min-width: 100px; } 
+.table th:nth-child(7) { min-width: 100px; } 
+.table th:nth-child(8) { min-width: 120px; } 
+.table th:nth-child(9) { min-width: 300px; } 
 
-/* Responsivo */
 @media (max-width: 1400px) {
   .actions {
     flex-direction: column;

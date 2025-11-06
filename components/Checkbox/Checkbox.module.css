@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  align-items: center;
+}
+
+.hiddenInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-dark-gray);
+  cursor: pointer;
+  user-select: none;
+}
+
+.customCheckbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-gray);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  background: var(--color-white);
+  flex-shrink: 0;
+}
+
+.customCheckbox svg {
+  color: var(--color-white);
+}
+
+.hiddenInput:checked + .label .customCheckbox {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
+.label:hover .customCheckbox {
+  border-color: var(--color-medium-gray);
+}

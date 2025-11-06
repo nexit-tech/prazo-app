@@ -253,98 +253,96 @@ export default function GestorPromocoesPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <div>
-                  <h1 className={styles.title}>Promoções</h1>
-                  <p className={styles.subtitle}>Gerencie descontos e etiquetas</p>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <div>
+                <h1 className={styles.title}>Promoções</h1>
+                <p className={styles.subtitle}>Gerencie descontos e etiquetas</p>
+              </div>
+              <div className={styles.headerActions}>
+                <Button variant="secondary" onClick={() => setIsBulkModalOpen(true)}>
+                  <Download size={18} />
+                  Gerar em Lote
+                </Button>
+                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                  <Plus size={18} />
+                  Nova Promoção
+                </Button>
+              </div>
+            </div>
+
+            <div className={styles.grid}>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Tag size={24} />
                 </div>
-                <div className={styles.headerActions}>
-                  <Button variant="secondary" onClick={() => setIsBulkModalOpen(true)}>
-                    <Download size={18} />
-                    Gerar em Lote
-                  </Button>
-                  <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                    <Plus size={18} />
-                    Nova Promoção
-                  </Button>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Total de Promoções</p>
+                  <h2 className={styles.statValue}>{totalPromotions}</h2>
                 </div>
               </div>
 
-              <div className={styles.grid}>
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Tag size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Total de Promoções</p>
-                    <h2 className={styles.statValue}>{totalPromotions}</h2>
-                  </div>
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <TrendingUp size={24} />
                 </div>
-
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <TrendingUp size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Promoções Ativas</p>
-                    <h2 className={styles.statValue}>{activePromotions}</h2>
-                  </div>
-                </div>
-
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Eye size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Visíveis para Lojas</p>
-                    <h2 className={styles.statValue}>{visiblePromotions}</h2>
-                  </div>
-                </div>
-
-                <div className={styles.statCard}>
-                  <div className={styles.statIconWrapper}>
-                    <Tag size={24} />
-                  </div>
-                  <div className={styles.statContent}>
-                    <p className={styles.statLabel}>Desconto Médio</p>
-                    <h2 className={styles.statValue}>{totalDiscount}%</h2>
-                  </div>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Promoções Ativas</p>
+                  <h2 className={styles.statValue}>{activePromotions}</h2>
                 </div>
               </div>
 
-              <div className={styles.filters}>
-                <SearchBar
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Buscar por produto, código..."
-                  fullWidth
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Eye size={24} />
+                </div>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Visíveis para Lojas</p>
+                  <h2 className={styles.statValue}>{visiblePromotions}</h2>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIconWrapper}>
+                  <Tag size={24} />
+                </div>
+                <div className={styles.statContent}>
+                  <p className={styles.statLabel}>Desconto Médio</p>
+                  <h2 className={styles.statValue}>{totalDiscount}%</h2>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.filters}>
+              <SearchBar
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por produto, código..."
+                fullWidth
+              />
+              <div className={styles.filterRow}>
+                <Select
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={statusOptions}
+                  placeholder="Filtrar por status"
                 />
-                <div className={styles.filterRow}>
-                  <Select
-                    value={statusFilter}
-                    onChange={setStatusFilter}
-                    options={statusOptions}
-                    placeholder="Filtrar por status"
-                  />
-                  <Select
-                    value={storeFilter}
-                    onChange={setStoreFilter}
-                    options={storeOptions}
-                    placeholder="Filtrar por loja"
-                  />
-                  <div className={styles.resultCount}>
-                    {filteredPromotions.length} promoç{filteredPromotions.length !== 1 ? 'ões' : 'ão'} encontrada{filteredPromotions.length !== 1 ? 's' : ''}
-                  </div>
+                <Select
+                  value={storeFilter}
+                  onChange={setStoreFilter}
+                  options={storeOptions}
+                  placeholder="Filtrar por loja"
+                />
+                <div className={styles.resultCount}>
+                  {filteredPromotions.length} promoç{filteredPromotions.length !== 1 ? 'ões' : 'ão'} encontrada{filteredPromotions.length !== 1 ? 's' : ''}
                 </div>
               </div>
+            </div>
 
-              <div className={styles.tableSection}>
-                <Card padding="medium">
-                  <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
-                </Card>
-              </div>
+            <div className={styles.tableSection}>
+              <Card padding="medium">
+                <Table columns={columns} data={filteredPromotions} emptyMessage="Nenhuma promoção encontrada" />
+              </Card>
             </div>
           </div>
         </main>

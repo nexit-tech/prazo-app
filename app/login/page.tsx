@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { Mail, Lock, Store } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import Button from '@/components/Button/Button'
+import Checkbox from '@/components/Checkbox/Checkbox'
 import styles from './page.module.css'
 
 export default function LoginPage() {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
@@ -19,7 +21,7 @@ export default function LoginPage() {
     setLocalError(null)
     
     try {
-      await login({ email, password })
+      await login({ email, password }, keepLoggedIn)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login'
       setLocalError(errorMessage)
@@ -66,6 +68,7 @@ export default function LoginPage() {
                     required
                     className={styles.input}
                     disabled={isLoggingIn}
+                    autoComplete="off"
                   />
                 </div>
               </div>
@@ -82,9 +85,17 @@ export default function LoginPage() {
                     required
                     className={styles.input}
                     disabled={isLoggingIn}
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
+
+              <Checkbox
+                id="keepLoggedIn"
+                label="Mantenha-me conectado"
+                checked={keepLoggedIn}
+                onChange={setKeepLoggedIn}
+              />
 
               {localError && <p className={styles.error}>{localError}</p>}
 
@@ -92,16 +103,6 @@ export default function LoginPage() {
                 {isLoggingIn ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
-
-            <div className={styles.demo}>
-              <p className={styles.demoTitle}>Credenciais de acesso:</p>
-              <p className={styles.demoText}>
-                <strong>Gestor:</strong> admin@drogaslider.com.br / Admin123456
-              </p>
-              <p className={styles.demoText}>
-                <strong>Loja:</strong> luana@drogaslider.com.br / Luana123456
-              </p>
-            </div>
           </div>
         </div>
       </div>

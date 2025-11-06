@@ -98,127 +98,125 @@ export default function LojaCadastrarPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>Cadastrar Produto</h1>
-                <p className={styles.subtitle}>Adicione um novo produto ao estoque</p>
-              </div>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Cadastrar Produto</h1>
+              <p className={styles.subtitle}>Adicione um novo produto ao estoque</p>
+            </div>
 
-              <Card padding="large">
-                <form onSubmit={handleSubmit} className={styles.form}>
-                  <div className={styles.row}>
-                    <Input
-                      label="Nome do Produto"
-                      placeholder="Ex: Dipirona 500mg 20 comprimidos"
-                      value={formData.name}
-                      onChange={(value) => setFormData({ ...formData, name: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                    <Input
-                      label="Marca"
-                      placeholder="Ex: Genérico"
-                      value={formData.brand}
-                      onChange={(value) => setFormData({ ...formData, brand: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                  </div>
+            <Card padding="large">
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.row}>
+                  <Input
+                    label="Nome do Produto"
+                    placeholder="Ex: Dipirona 500mg 20 comprimidos"
+                    value={formData.name}
+                    onChange={(value) => setFormData({ ...formData, name: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                  <Input
+                    label="Marca"
+                    placeholder="Ex: Genérico"
+                    value={formData.brand}
+                    onChange={(value) => setFormData({ ...formData, brand: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-                  <div className={styles.row}>
-                    <AutocompleteInput
-                      label="Categoria"
-                      placeholder="Digite ou selecione uma categoria"
-                      value={formData.category}
-                      onChange={(value) => setFormData({ ...formData, category: value })}
-                      options={categories}
-                      onCreateNew={handleCreateCategory}
-                      fullWidth
-                      required
-                    />
-                    <Input
-                      label="Lote"
-                      placeholder="Ex: LT20251105A"
-                      value={formData.batch}
-                      onChange={(value) => setFormData({ ...formData, batch: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className={styles.row}>
-                    <Input
-                      label="Código de Barras"
-                      placeholder="Ex: 7891234567001"
-                      value={formData.barcode}
-                      onChange={(value) => setFormData({ ...formData, barcode: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                    <Input
-                      label="Código Interno"
-                      placeholder="Ex: MED001"
-                      value={formData.internalCode}
-                      onChange={(value) => setFormData({ ...formData, internalCode: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className={styles.row}>
-                    <Input
-                      type="number"
-                      label="Quantidade"
-                      placeholder="Ex: 15"
-                      value={formData.quantity}
-                      onChange={(value) => setFormData({ ...formData, quantity: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                    <Input
-                      type="number"
-                      label="Preço (R$)"
-                      placeholder="Ex: 8.90"
-                      value={formData.price}
-                      onChange={(value) => setFormData({ ...formData, price: value })}
-                      fullWidth
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <DatePicker
-                    label="Data de Validade"
-                    value={formData.expirationDate}
-                    onChange={(value) => setFormData({ ...formData, expirationDate: value })}
-                    min={today}
+                <div className={styles.row}>
+                  <AutocompleteInput
+                    label="Categoria"
+                    placeholder="Digite ou selecione uma categoria"
+                    value={formData.category}
+                    onChange={(value) => setFormData({ ...formData, category: value })}
+                    options={categories}
+                    onCreateNew={handleCreateCategory}
                     fullWidth
                     required
                   />
+                  <Input
+                    label="Lote"
+                    placeholder="Ex: LT20251105A"
+                    value={formData.batch}
+                    onChange={(value) => setFormData({ ...formData, batch: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-                  <div className={styles.buttonGroup}>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => router.back()}
-                      disabled={loading}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button type="submit" variant="primary" disabled={loading}>
-                      {loading ? 'Cadastrando...' : 'Cadastrar Produto'}
-                    </Button>
-                  </div>
-                </form>
-              </Card>
-            </div>
+                <div className={styles.row}>
+                  <Input
+                    label="Código de Barras"
+                    placeholder="Ex: 7891234567001"
+                    value={formData.barcode}
+                    onChange={(value) => setFormData({ ...formData, barcode: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                  <Input
+                    label="Código Interno"
+                    placeholder="Ex: MED001"
+                    value={formData.internalCode}
+                    onChange={(value) => setFormData({ ...formData, internalCode: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className={styles.row}>
+                  <Input
+                    type="number"
+                    label="Quantidade"
+                    placeholder="Ex: 15"
+                    value={formData.quantity}
+                    onChange={(value) => setFormData({ ...formData, quantity: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                  <Input
+                    type="number"
+                    label="Preço (R$)"
+                    placeholder="Ex: 8.90"
+                    value={formData.price}
+                    onChange={(value) => setFormData({ ...formData, price: value })}
+                    fullWidth
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <DatePicker
+                  label="Data de Validade"
+                  value={formData.expirationDate}
+                  onChange={(value) => setFormData({ ...formData, expirationDate: value })}
+                  min={today}
+                  fullWidth
+                  required
+                />
+
+                <div className={styles.buttonGroup}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => router.back()}
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={loading}>
+                    {loading ? 'Cadastrando...' : 'Cadastrar Produto'}
+                  </Button>
+                </div>
+              </form>
+            </Card>
           </div>
         </main>
       </div>

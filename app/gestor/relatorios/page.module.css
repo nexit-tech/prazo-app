@@ -35,14 +35,6 @@
   }
 }
 
-.mainCard {
-  background: var(--color-white);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-soft);
-  padding: var(--spacing-2xl);
-  min-height: calc(100vh - 3rem);
-}
-
 .content {
   width: 100%;
   display: flex;
@@ -126,10 +118,6 @@
 @media (max-width: 768px) {
   .main {
     padding: var(--spacing-md);
-  }
-
-  .mainCard {
-    padding: var(--spacing-lg);
   }
 
   .header {

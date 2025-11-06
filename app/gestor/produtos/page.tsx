@@ -172,48 +172,46 @@ export default function GestorProdutosPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>Produtos</h1>
-                <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
-              </div>
-
-              <ProductFilters
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
-                categoryFilter={categoryFilter}
-                onCategoryChange={setCategoryFilter}
-                storeFilter={storeFilter}
-                onStoreChange={setStoreFilter}
-                minPrice={minPrice}
-                onMinPriceChange={setMinPrice}
-                maxPrice={maxPrice}
-                onMaxPriceChange={setMaxPrice}
-                minDays={minDays}
-                onMinDaysChange={setMinDays}
-                maxDays={maxDays}
-                onMaxDaysChange={setMaxDays}
-                onClearFilters={handleClearFilters}
-                statusOptions={statusOptions}
-                categoryOptions={categoryOptions}
-                storeOptions={storeOptions}
-                resultsCount={filteredAndSortedProducts.length}
-              />
-
-              <Card padding="medium">
-                <ProductTable
-                  products={filteredAndSortedProducts}
-                  getStoreName={getStoreName}
-                  onViewDetails={handleViewDetails}
-                  sortColumn={sortColumn}
-                  sortOrder={sortOrder}
-                  onSort={handleSort}
-                />
-              </Card>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Produtos</h1>
+              <p className={styles.subtitle}>Visualize todos os produtos cadastrados</p>
             </div>
+
+            <ProductFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              storeFilter={storeFilter}
+              onStoreChange={setStoreFilter}
+              minPrice={minPrice}
+              onMinPriceChange={setMinPrice}
+              maxPrice={maxPrice}
+              onMaxPriceChange={setMaxPrice}
+              minDays={minDays}
+              onMinDaysChange={setMinDays}
+              maxDays={maxDays}
+              onMaxDaysChange={setMaxDays}
+              onClearFilters={handleClearFilters}
+              statusOptions={statusOptions}
+              categoryOptions={categoryOptions}
+              storeOptions={storeOptions}
+              resultsCount={filteredAndSortedProducts.length}
+            />
+
+            <Card padding="medium">
+              <ProductTable
+                products={filteredAndSortedProducts}
+                getStoreName={getStoreName}
+                onViewDetails={handleViewDetails}
+                sortColumn={sortColumn}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+            </Card>
           </div>
         </main>
       </div>

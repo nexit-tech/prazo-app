@@ -75,91 +75,89 @@ export default function GestorDashboard() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>Dashboard</h1>
-                <p className={styles.subtitle}>Visão geral do sistema</p>
-              </div>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Dashboard</h1>
+              <p className={styles.subtitle}>Visão geral do sistema</p>
+            </div>
 
-              <div className={styles.grid}>
-                <StatCard
-                  icon={Store}
-                  label="Lojas Ativas"
-                  value={stats.activeStores}
-                  delay={0.1}
-                />
-                <StatCard
-                  icon={Package}
-                  label="Produtos em Estoque"
-                  value={stats.totalProducts}
-                  delay={0.2}
-                />
-                <StatCard
-                  icon={TrendingUp}
-                  label="Produtos Vendidos"
-                  value={stats.soldProducts}
-                  delay={0.3}
-                />
-                <StatCard
+            <div className={styles.grid}>
+              <StatCard
+                icon={Store}
+                label="Lojas Ativas"
+                value={stats.activeStores}
+                delay={0.1}
+              />
+              <StatCard
+                icon={Package}
+                label="Produtos em Estoque"
+                value={stats.totalProducts}
+                delay={0.2}
+              />
+              <StatCard
+                icon={TrendingUp}
+                label="Produtos Vendidos"
+                value={stats.soldProducts}
+                delay={0.3}
+              />
+              <StatCard
+                icon={AlertTriangle}
+                label="Promoções Ativas"
+                value={stats.activePromotions}
+                delay={0.4}
+              />
+              <StatCard
+                icon={DollarSign}
+                label="Valor em Estoque"
+                value={formatCurrency(stats.totalValue)}
+                delay={0.5}
+              />
+              <StatCard
+                icon={TrendingDown}
+                label="Receita Total"
+                value={formatCurrency(stats.totalRevenue)}
+                delay={0.6}
+              />
+            </div>
+
+            <div className={styles.categorySection}>
+              <h3 className={styles.categoryTitle}>Análise Geral por Validade</h3>
+              <div className={styles.categoryGrid}>
+                <CategoryCard
                   icon={AlertTriangle}
-                  label="Promoções Ativas"
-                  value={stats.activePromotions}
-                  delay={0.4}
+                  label="Declarar Baixa"
+                  value={stats.categories.declarar}
+                  description="1-15 dias"
+                  variant="declarar"
                 />
-                <StatCard
-                  icon={DollarSign}
-                  label="Valor em Estoque"
-                  value={formatCurrency(stats.totalValue)}
-                  delay={0.5}
+                <CategoryCard
+                  icon={AlertTriangle}
+                  label="Emergência"
+                  value={stats.categories.emergencia}
+                  description="16-29 dias"
+                  variant="emergencia"
                 />
-                <StatCard
-                  icon={TrendingDown}
-                  label="Receita Total"
-                  value={formatCurrency(stats.totalRevenue)}
-                  delay={0.6}
+                <CategoryCard
+                  icon={AlertTriangle}
+                  label="Urgente"
+                  value={stats.categories.urgente}
+                  description="30-59 dias"
+                  variant="urgente"
                 />
-              </div>
-
-              <div className={styles.categorySection}>
-                <h3 className={styles.categoryTitle}>Análise Geral por Validade</h3>
-                <div className={styles.categoryGrid}>
-                  <CategoryCard
-                    icon={AlertTriangle}
-                    label="Declarar Baixa"
-                    value={stats.categories.declarar}
-                    description="1-15 dias"
-                    variant="declarar"
-                  />
-                  <CategoryCard
-                    icon={AlertTriangle}
-                    label="Emergência"
-                    value={stats.categories.emergencia}
-                    description="16-29 dias"
-                    variant="emergencia"
-                  />
-                  <CategoryCard
-                    icon={AlertTriangle}
-                    label="Urgente"
-                    value={stats.categories.urgente}
-                    description="30-59 dias"
-                    variant="urgente"
-                  />
-                  <CategoryCard
-                    icon={Package}
-                    label="Pouco Urgente"
-                    value={stats.categories.poucoUrgente}
-                    description="60-89 dias"
-                    variant="poucoUrgente"
-                  />
-                  <CategoryCard
-                    icon={Package}
-                    label="Em Análise"
-                    value={stats.categories.analise}
-                    description="90+ dias"
-                    variant="analise"
-                  />
-                </div>
+                <CategoryCard
+                  icon={Package}
+                  label="Pouco Urgente"
+                  value={stats.categories.poucoUrgente}
+                  description="60-89 dias"
+                  variant="poucoUrgente"
+                />
+                <CategoryCard
+                  icon={Package}
+                  label="Em Análise"
+                  value={stats.categories.analise}
+                  description="90+ dias"
+                  variant="analise"
+                />
               </div>
             </div>
           </div>

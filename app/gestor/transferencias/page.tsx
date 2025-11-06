@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import Header from '@/components/Header/Header';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Card from '@/components/Card/Card';
 import Table from '@/components/Table/Table';
@@ -109,19 +108,15 @@ export default function GestorTransferenciasPage() {
         <Sidebar menuItems={menuItems} />
         
         <main className={styles.main}>
-          <div className={styles.mainCard}>
-            <Header />
-            
-            <div className={styles.content}>
-              <div className={styles.header}>
-                <h1 className={styles.title}>Transferências</h1>
-                <p className={styles.subtitle}>Aprove ou rejeite transferências entre lojas</p>
-              </div>
-
-              <Card padding="medium">
-                <Table columns={columns} data={mockTransfers} />
-              </Card>
+          <div className={styles.content}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Transferências</h1>
+              <p className={styles.subtitle}>Aprove ou rejeite transferências entre lojas</p>
             </div>
+
+            <Card padding="medium">
+              <Table columns={columns} data={mockTransfers} />
+            </Card>
           </div>
         </main>
       </div>
