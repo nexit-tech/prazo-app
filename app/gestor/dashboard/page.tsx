@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Store, Package, AlertTriangle, DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
-import StatCard from './components/StatCard/StatCard'
-import CategoryCard from './components/CategoryCard/CategoryCard'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
+import MetricsGrid from './components/MetricsGrid/MetricsGrid'
+import ExpirationAnalysis from './components/ExpirationAnalysis/ExpirationAnalysis'
+import ChartsSection from './components/ChartsSection/ChartsSection'
 import { useStores } from '@/hooks/useStores'
 import { useProducts } from '@/hooks/useProducts'
 import { usePromotions } from '@/hooks/usePromotions'
@@ -47,6 +47,30 @@ export default function GestorDashboard() {
       else if (category === 'analise') categories.analise++
     })
 
+    const salesByDate: Record<string, { sales: number; revenue: number }> = {}
+    soldProducts.forEach(p => {
+      if (!p.sold_at) return
+      const date = new Date(p.sold_at).toISOString().split('T')[0]
+      if (!salesByDate[date]) salesByDate[date] = { sales: 0, revenue: 0 }
+      salesByDate[date].sales++
+      salesByDate[date].revenue += p.current_price
+    })
+
+    const salesData = Object.entries(salesByDate)
+      .map(([date, data]) => ({ date, ...data }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-30)
+
+    const categoryCount: Record<string, number> = {}
+    soldProducts.forEach(p => {
+      categoryCount[p.category] = (categoryCount[p.category] || 0) + 1
+    })
+
+    const categoryData = Object.entries(categoryCount)
+      .map(([category, value]) => ({ category, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10)
+
     return {
       activeStores: stores.length,
       totalProducts: products.length,
@@ -55,15 +79,10 @@ export default function GestorDashboard() {
       totalValue,
       totalRevenue,
       categories,
+      salesData,
+      categoryData,
     }
   }, [stores, products, soldProducts, promotions])
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value)
-  }
 
   if (productsLoading) {
     return <LoadingSpinner fullScreen text="Carregando dashboard..." />
@@ -81,85 +100,27 @@ export default function GestorDashboard() {
               <p className={styles.subtitle}>Visão geral do sistema</p>
             </div>
 
-            <div className={styles.grid}>
-              <StatCard
-                icon={Store}
-                label="Lojas Ativas"
-                value={stats.activeStores}
-                delay={0.1}
-              />
-              <StatCard
-                icon={Package}
-                label="Produtos em Estoque"
-                value={stats.totalProducts}
-                delay={0.2}
-              />
-              <StatCard
-                icon={TrendingUp}
-                label="Produtos Vendidos"
-                value={stats.soldProducts}
-                delay={0.3}
-              />
-              <StatCard
-                icon={AlertTriangle}
-                label="Promoções Ativas"
-                value={stats.activePromotions}
-                delay={0.4}
-              />
-              <StatCard
-                icon={DollarSign}
-                label="Valor em Estoque"
-                value={formatCurrency(stats.totalValue)}
-                delay={0.5}
-              />
-              <StatCard
-                icon={TrendingDown}
-                label="Receita Total"
-                value={formatCurrency(stats.totalRevenue)}
-                delay={0.6}
-              />
-            </div>
+            <MetricsGrid
+              activeStores={stats.activeStores}
+              totalProducts={stats.totalProducts}
+              soldProducts={stats.soldProducts}
+              activePromotions={stats.activePromotions}
+              totalValue={stats.totalValue}
+              totalRevenue={stats.totalRevenue}
+            />
 
-            <div className={styles.categorySection}>
-              <h3 className={styles.categoryTitle}>Análise Geral por Validade</h3>
-              <div className={styles.categoryGrid}>
-                <CategoryCard
-                  icon={AlertTriangle}
-                  label="Declarar Baixa"
-                  value={stats.categories.declarar}
-                  description="1-15 dias"
-                  variant="declarar"
-                />
-                <CategoryCard
-                  icon={AlertTriangle}
-                  label="Emergência"
-                  value={stats.categories.emergencia}
-                  description="16-29 dias"
-                  variant="emergencia"
-                />
-                <CategoryCard
-                  icon={AlertTriangle}
-                  label="Urgente"
-                  value={stats.categories.urgente}
-                  description="30-59 dias"
-                  variant="urgente"
-                />
-                <CategoryCard
-                  icon={Package}
-                  label="Pouco Urgente"
-                  value={stats.categories.poucoUrgente}
-                  description="60-89 dias"
-                  variant="poucoUrgente"
-                />
-                <CategoryCard
-                  icon={Package}
-                  label="Em Análise"
-                  value={stats.categories.analise}
-                  description="90+ dias"
-                  variant="analise"
-                />
-              </div>
-            </div>
+            <ExpirationAnalysis
+              declarar={stats.categories.declarar}
+              emergencia={stats.categories.emergencia}
+              urgente={stats.categories.urgente}
+              poucoUrgente={stats.categories.poucoUrgente}
+              analise={stats.categories.analise}
+            />
+
+            <ChartsSection
+              salesData={stats.salesData}
+              categoryData={stats.categoryData}
+            />
           </div>
         </main>
       </div>

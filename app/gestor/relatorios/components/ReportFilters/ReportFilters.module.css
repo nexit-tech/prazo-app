@@ -1,20 +1,20 @@
 .container {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-xl);
-  background: var(--color-white);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--color-gray);
+  gap: 24px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--color-gray);
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .iconWrapper {
@@ -23,137 +23,129 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-light-gray);
-  border-radius: var(--border-radius-md);
-  color: var(--color-medium-gray);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  color: #495057;
   flex-shrink: 0;
 }
 
+.headerText {
+  flex: 1;
+}
+
 .title {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--color-black);
+  color: #212529;
   margin: 0;
 }
 
 .subtitle {
-  font-size: 0.8125rem;
-  color: var(--color-medium-gray);
-  margin: 0;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
+  font-size: 13px;
+  color: #6c757d;
+  margin: 2px 0 0 0;
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 12px;
 }
 
 .label {
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-black);
+  color: #212529;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.5px;
 }
 
 .dateRow {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: var(--spacing-md);
+  gap: 12px;
   align-items: flex-end;
 }
 
 .dateField {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 8px;
 }
 
 .dateLabel {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-medium-gray);
+  color: #6c757d;
 }
 
 .dateInput {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--border-radius-md);
-  border: 2px solid var(--color-gray);
-  background: var(--color-white);
-  font-size: 0.875rem;
-  color: var(--color-black);
-  font-family: var(--font-body);
-  transition: var(--transition);
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+  font-size: 14px;
+  color: #212529;
+  font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 .dateInput:focus {
   outline: none;
-  border-color: var(--color-black);
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .dateSeparator {
-  font-size: 0.875rem;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-medium-gray);
-  padding-bottom: 0.75rem;
+  color: #adb5bd;
+  padding-bottom: 10px;
 }
 
 .quickFilters {
   display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .quickButton {
-  padding: 0.5rem 1rem;
-  background: var(--color-light-gray);
-  border: 2px solid var(--color-gray);
-  border-radius: var(--border-radius-md);
-  font-size: 0.8125rem;
+  padding: 10px 16px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-dark-gray);
+  color: #495057;
   cursor: pointer;
-  transition: var(--transition);
-  font-family: var(--font-body);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: left;
 }
 
 .quickButton:hover {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
+  background: #667eea;
+  color: #ffffff;
+  border-color: #667eea;
+  transform: translateX(4px);
 }
 
 .actions {
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-gray);
+  padding-top: 8px;
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: var(--spacing-lg);
+    padding: 20px;
   }
 
   .dateRow {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .dateSeparator {
     display: none;
-  }
-
-  .quickFilters {
-    flex-direction: column;
-  }
-
-  .quickButton {
-    width: 100%;
   }
 }

@@ -6,6 +6,7 @@ import Card from '@/components/Card/Card'
 import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner'
 import ProductFilters from './components/ProductFilters/ProductFilters'
 import ProductTable from './components/ProductTable/ProductTable'
+import ViewProductModal from './components/ViewProductModal/ViewProductModal'
 import { useProducts } from '@/hooks/useProducts'
 import { useStores } from '@/hooks/useStores'
 import { getDaysUntilExpiration, getExpirationCategory } from '@/utils/dateHelpers'
@@ -27,6 +28,9 @@ export default function GestorProdutosPage() {
   const [maxDays, setMaxDays] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<SortOrder>(null)
+
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
 
   const menuItems = [
     { label: 'Dashboard', href: '/gestor/dashboard', icon: 'BarChart3' },
@@ -137,7 +141,13 @@ export default function GestorProdutosPage() {
   }
 
   const handleViewDetails = (productId: string) => {
-    alert('Funcionalidade de visualização será implementada em breve')
+    setSelectedProductId(productId)
+    setIsViewModalOpen(true)
+  }
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false)
+    setSelectedProductId(null)
   }
 
   const statusOptions = [
@@ -215,6 +225,12 @@ export default function GestorProdutosPage() {
           </div>
         </main>
       </div>
+
+      <ViewProductModal
+        isOpen={isViewModalOpen}
+        onClose={handleCloseViewModal}
+        productId={selectedProductId}
+      />
     </div>
   )
 }

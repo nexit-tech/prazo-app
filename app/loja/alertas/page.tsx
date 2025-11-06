@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertTriangle, Package, Tag, Trash2, ShoppingCart } from 'lucide-react'
+import { AlertTriangle, Package, Trash2, ShoppingCart } from 'lucide-react'
 import Sidebar from '@/components/Sidebar/Sidebar'
 import Card from '@/components/Card/Card'
 import Table from '@/components/Table/Table'
@@ -51,10 +51,6 @@ export default function LojaAlertasPage() {
 
     return { declarar, emergencia, urgente }
   }, [criticalProducts])
-
-  const handlePromotion = (productId: string) => {
-    alert('Funcionalidade de criar promoção será implementada em breve')
-  }
 
   const handleModalClose = () => {
     setModalState({ type: null, productId: null })
@@ -112,9 +108,6 @@ export default function LojaAlertasPage() {
         <div className={styles.actions}>
           <Button variant="primary" onClick={() => setModalState({ type: 'sell', productId: value })}>
             <ShoppingCart size={16} />
-          </Button>
-          <Button variant="secondary" onClick={() => handlePromotion(value)}>
-            <Tag size={16} />
           </Button>
           <Button variant="danger" onClick={() => setModalState({ type: 'delete', productId: value })}>
             <Trash2 size={16} />

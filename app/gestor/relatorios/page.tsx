@@ -99,7 +99,6 @@ export default function GestorRelatoriosPage() {
           <div className={styles.content}>
             <div className={styles.header}>
               <div className={styles.headerIcon}>
-                <TrendingUp size={32} />
               </div>
               <div>
                 <h1 className={styles.title}>Relatórios e Análises</h1>
